@@ -2,8 +2,6 @@ package cga.engine.components.shadows
 
 import cga.engine.components.light.SpotLight
 import org.joml.Matrix4f
-import org.joml.Vector3f
-import kotlin.math.acos
 
 class SpotLightShadowMapper(private val shadowResolution: Int, private var width: Int, private var height: Int, private val lightSource: SpotLight) : ShadowMapper(shadowResolution, width, height, lightSource) {
     private var AspectRatio: Float = 1f

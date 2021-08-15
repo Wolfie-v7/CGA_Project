@@ -3,7 +3,6 @@ package cga.engine.components.geometry
 import cga.engine.components.animation.Animation
 import cga.engine.components.shader.ShaderProgram
 import org.joml.Matrix4f
-import org.joml.Vector3f
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30
 

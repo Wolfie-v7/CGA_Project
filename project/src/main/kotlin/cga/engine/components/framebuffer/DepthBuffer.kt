@@ -1,10 +1,6 @@
 package cga.engine.components.framebuffer
 
-import cga.engine.components.geometry.VertexAttribute
-import cga.engine.components.light.ILight
 import cga.engine.components.shader.ShaderProgram
-import org.joml.Matrix4f
-import org.joml.Vector3f
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30
 import java.lang.Exception

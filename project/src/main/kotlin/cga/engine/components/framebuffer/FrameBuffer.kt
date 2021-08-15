@@ -3,7 +3,6 @@ package cga.engine.components.framebuffer
 import cga.engine.components.geometry.VertexAttribute
 import cga.engine.components.shader.ShaderProgram
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL30.*
 

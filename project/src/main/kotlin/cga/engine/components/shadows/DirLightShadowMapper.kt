@@ -5,8 +5,6 @@ import cga.engine.components.light.DirectionalLight
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
-import kotlin.math.acos
-import kotlin.math.asin
 import kotlin.math.max
 import kotlin.math.min
 

@@ -2,7 +2,6 @@ package cga.engine.components.water
 
 import cga.engine.components.geometry.*
 import cga.engine.components.light.DirectionalLight
-import cga.engine.components.light.ILight
 import cga.engine.components.shader.ShaderProgram
 import cga.engine.components.texture.Texture2D
 import org.joml.Vector2f

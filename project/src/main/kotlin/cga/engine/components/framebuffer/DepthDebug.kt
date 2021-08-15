@@ -2,7 +2,6 @@ package cga.engine.components.framebuffer
 
 import cga.engine.components.geometry.VertexAttribute
 import cga.engine.components.shader.ShaderProgram
-import cga.engine.components.texture.Texture2D
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30
 import java.lang.Exception

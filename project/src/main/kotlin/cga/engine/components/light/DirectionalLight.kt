@@ -2,7 +2,6 @@ package cga.engine.components.light
 
 import cga.engine.components.geometry.Transformable
 import cga.engine.components.shader.ShaderProgram
-import cga.engine.components.texture.Texture2D
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f

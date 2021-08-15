@@ -4,7 +4,6 @@ import cga.engine.components.camera.TronCamera
 import cga.engine.components.shader.ShaderProgram
 import org.joml.Matrix4f
 import org.joml.Vector3f
-import org.joml.Vector4f
 import org.lwjgl.opengl.GL30
 
 class CollisionMesh(private val vertexdata: FloatArray, indexdata: IntArray, private var attributes: Array<VertexAttribute>, _parent: Transformable? = null, var bisBlocking : Boolean = false)

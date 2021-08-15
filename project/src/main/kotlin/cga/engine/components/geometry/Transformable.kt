@@ -3,8 +3,6 @@ package cga.engine.components.geometry
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
-import kotlin.math.cos
-import kotlin.math.sin
 
 
 open class Transformable(var modelMatrix: Matrix4f = Matrix4f(), var parent: Transformable? = null) {
