@@ -91,9 +91,9 @@ class DirLightShadowMapper(private var shadowResolution : Int,
         }
         val distZ = maxZ - minZ
 
-        println("Box Bounds: $minX, $maxX, $minY, $maxY, $z_near, $distZ")
+        println("Box Bounds: $minX, $maxX, $minY, $maxY, 0f, $distZ")
 
-        val LightProjectionMatrix = Matrix4f().ortho(-maxX, maxX, -maxY, maxY, z_near, distZ)
+        val LightProjectionMatrix = Matrix4f().ortho(-maxX, maxX, -maxY, maxY, 0f, distZ)
         return LightProjectionMatrix
         //return Matrix4f().ortho(left, right, down, up, zNear, zFar);
     }

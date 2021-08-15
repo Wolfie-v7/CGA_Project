@@ -875,26 +875,32 @@ class Scene(private val window: GameWindow) {
 
 
         if(window.getKeyState(GLFW.GLFW_KEY_P))
-            renderDepthMap()
+            renderDepthMap(0)
+        if(window.getKeyState(GLFW.GLFW_KEY_O))
+            renderDepthMap(1)
+        if(window.getKeyState(GLFW.GLFW_KEY_I))
+            renderDepthMap(2)
+        if(window.getKeyState(GLFW.GLFW_KEY_U))
+            renderDepthMap(3)
 
         when {
             window.getKeyState(GLFW.GLFW_KEY_L) -> postProcessShader.setUniform("negative", true)
             window.getKeyState(GLFW.GLFW_KEY_G) -> postProcessShader.setUniform("grayscale", true)
             else -> {
                 postProcessShader.setUniform("negative", false)
-                postProcessShader.setUniform("grayscale", false);
+                postProcessShader.setUniform("grayscale", false)
             }
         }
 
 
     }
-    fun renderDepthMap() {
+    private fun renderDepthMap(index: Int) {
         depthMapDebugShader.use();
         depthDebug.bind(800, 800);
-        depthDebug.setTex(dirShadowMapper.getDepthMap());
+        depthDebug.setTex(cs.shadowMappersList[index].getDepthMap());
         depthDebug.unbind();
         glDisable(GL_DEPTH_TEST);
-        depthDebug.render(depthMapDebugShader, dirShadowMapper.getDepthMap());
+        depthDebug.render(depthMapDebugShader, cs.shadowMappersList[index].getDepthMap())
     }
 
     fun update(dt: Float, t: Float) {

@@ -143,10 +143,9 @@ void main(){
     vec3 ViewDir = normalize(-vertexData.position);
     //vec3 ViewDir = normalize(-vertexData.tangentPosition);
 
-    int cascade = 3;
+    int cascade = 0;
     for (int i = 0; i < NUM_CASCADES; i++)
     {
-        float p = cascadePositions[i].z / cascadePositions[i].w;
         if ( abs(cascadePositions[i].z) < cascadeFarPlanes[i] )
         {
             cascade = i;

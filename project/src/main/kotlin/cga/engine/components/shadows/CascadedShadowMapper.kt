@@ -21,7 +21,7 @@ class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val ligh
     var lightProjectionMatrices = Array(NUM_CASCADES) { Matrix4f() }
     var cascadesMatrices = Array(NUM_CASCADES) { Matrix4f() }
 
-    private val shadowMappersList = mutableListOf<DirLightShadowMapper>()
+    val shadowMappersList = mutableListOf<DirLightShadowMapper>()
 
     
 
