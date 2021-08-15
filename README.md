@@ -1,12 +1,14 @@
-# Projektname
-The Path v0.0.5
+# <p align="center">The Path</p>
+<p align="center">v0.0.5</p>
 
-# Teammitglieder
+### Steuerung 
+- //TO DO//
+### Teammitglieder
 
 - Alaaeddine Jeljli
 
 
-# Featureliste
+### Featureliste
 - Post-Processing (inkl. Gamma Correction, HDR, Bloom)
 - Third-Person-Kamera
 - Verschiedene Shaderprogramme: Phong, Skybox, Instancing, DepthMap, Post-Processing, Wasseroberfläche, Weichzeichnen(Gaussian Blur)...
