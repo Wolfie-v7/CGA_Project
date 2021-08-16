@@ -55,7 +55,8 @@ class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val ligh
     fun configureMatrices(shader: ShaderProgram) {
         for (s in shadowMappersList.indices) {
             uploadZSplits(shader, s)
-            shadowMappersList[s].configureMatrices(shader, "cascades", s)
+            val r = shadowMappersList[s].configureMatrices(shader, "cascades", s)
+            //println("Matrix $s: $r")
         }
     }
 

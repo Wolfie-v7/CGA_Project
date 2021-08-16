@@ -122,7 +122,7 @@ void main(){
         discard;
     }
 
-    int cascade = 1;
+    int cascade = 0;
     for (int i = 0; i < NUM_CASCADES; i++)
     {
         if ( abs(vertexData.position.z) < cascadeFarPlanes[i] )

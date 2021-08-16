@@ -18,9 +18,6 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
             0.0f, 0.0f, 0.0f, 1.0f
     );
 
-    init {
-
-    }
 
     override fun getCalculateViewMatrix(): Matrix4f {
 

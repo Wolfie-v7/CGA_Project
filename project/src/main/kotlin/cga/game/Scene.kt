@@ -467,6 +467,9 @@ class Scene(private val window: GameWindow) {
         }
 
         instanceShader.setUniform("viewPosition", Camera.getWorldPosition());
+        DirectionalLight.bind(instanceShader, "dirLight", Camera.getCalculateViewMatrix());
+        for (pl in pointLights) pl.bind(instanceShader, "pointLights[${pointLights.indexOf(pl)}]");
+        for (sl in spotLights) sl.bind(instanceShader, "spotLights[${spotLights.indexOf(sl)}]", Camera.getCalculateViewMatrix());
 
         for(inst in Instances) {
             view_norm_matrix = Camera.getCalculateViewMatrix();
@@ -476,9 +479,7 @@ class Scene(private val window: GameWindow) {
             inst.render(instanceShader);
         }
 
-        DirectionalLight.bind(instanceShader, "dirLight", Camera.getCalculateViewMatrix());
-        for (pl in pointLights) pl.bind(instanceShader, "pointLights[${pointLights.indexOf(pl)}]");
-        for (sl in spotLights) sl.bind(instanceShader, "spotLights[${spotLights.indexOf(sl)}]", Camera.getCalculateViewMatrix());
+
 
         //================================================================================================================================
         /**
