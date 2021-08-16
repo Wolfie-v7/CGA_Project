@@ -143,15 +143,17 @@ void main(){
     vec3 ViewDir = normalize(-vertexData.position);
     //vec3 ViewDir = normalize(-vertexData.tangentPosition);
 
-    int cascade = 0;
+    int cascade = 3;
     for (int i = 0; i < NUM_CASCADES; i++)
     {
-        if ( abs(cascadePositions[i].z) < cascadeFarPlanes[i] )
+        if ( abs(vertexData.position.z) < cascadeFarPlanes[i] )
         {
             cascade = i;
             break;
         }
     }
+
+    //cascade = 1;
 
     //================================================================================================================
 
@@ -409,6 +411,13 @@ float calculateCascadedShadows(vec3 normal, vec3 lightDir, sampler2D shadowTex, 
 
     return shadow /= 9.0;
 }
+
+
+
+/*
+* Voronoi pattern
+* Three Variants with different complexities
+*/
 
 vec3 textureUntile(sampler2D samp, vec2 uv)
 {

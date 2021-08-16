@@ -136,6 +136,7 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
         return newHeight
     }
 
+
     private fun calculateNormal(x : Int, y : Int, image: BufferedImage) : Vector3f {
         val heightL = calculateHeight(x - 1, y, image)
         val heightR = calculateHeight(x + 1, y, image)

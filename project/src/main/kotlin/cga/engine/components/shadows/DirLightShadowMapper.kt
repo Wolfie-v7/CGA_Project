@@ -24,6 +24,7 @@ class DirLightShadowMapper(private var shadowResolution : Int,
     ): this(resoluion, width, height, lightSource, camera)
     {
         z_near = zNear; z_far = zFar
+        //println("$z_near, $z_far")
     }
     private var z_near = camera.ZNear
     private var z_far = camera.ZFar
@@ -52,11 +53,12 @@ class DirLightShadowMapper(private var shadowResolution : Int,
         }
         center.div(8f)
 
-        var distance = maxZ_o - minZ_o; distance /= 1f
+        var distance = maxZ_o - minZ_o; //distance /= 1f
+        //println("Distance: $distance")
         //println("$maxZ_o - $minZ_o = $distance")
-        val lightWorldPos = Vector3f(lightSource.direction).mul(distance)
+        val lightWorldPos = Vector3f(lightSource.direction).normalize().mul(distance * 10f)
         val lightPos = Vector3f(center).add(lightWorldPos)
-        //println("Position: $lightPos; Direction: ${lightSource.direction}")
+        //println("Position: $lightPos; Direction: $center")
 
         val LightViewMatrix = Matrix4f().lookAt(lightPos, Vector3f(center), Vector3f(0f, 1f, 0f))
 
@@ -90,10 +92,11 @@ class DirLightShadowMapper(private var shadowResolution : Int,
             maxZ = max(tmpVec.z(), maxZ);
         }
         val distZ = maxZ - minZ
+        //println("Positon: ${Matrix4f(LightViewMatrix).invert().getColumn(3, Vector3f())} DistZ: $distZ")
 
-        println("Box Bounds: $minX, $maxX, $minY, $maxY, 0f, $distZ")
+        //println("Box Bounds: $minX, $maxX, $minY, $maxY, 0f, $distZ")
 
-        val LightProjectionMatrix = Matrix4f().ortho(-maxX, maxX, -maxY, maxY, 0f, distZ)
+        val LightProjectionMatrix = Matrix4f().ortho(minX, maxX, minY, maxY, 0f, distZ * 50f)
         return LightProjectionMatrix
         //return Matrix4f().ortho(left, right, down, up, zNear, zFar);
     }

@@ -39,7 +39,7 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
         return Matrix4f().lookAt(newPos.x, newPos.y, newPos.z, newForward.x, newForward.y, newForward.z, newUp.x, newUp.y, newUp.z);
         */
 
-        Matrix4f().toString()
+        //Matrix4f().toString()
         // Using the inverse of the World Model Matrix. Works fine
         return Matrix4f(getWorldModelMatrix()).invert();
 

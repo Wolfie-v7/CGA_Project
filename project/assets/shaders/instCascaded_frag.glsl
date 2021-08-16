@@ -96,6 +96,7 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
 vec3 calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir); // Pointlight Calculations
 vec3 calculateSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir); // Spotlight Calcualtions
 float calculateShadows(vec3 normal, vec3 lightDir, sampler2D shadowTex, int index);
+float calculateCascadedShadows(vec3 normal, vec3 lightDir, sampler2D shadowTex, int index);
 vec3 applyFog(  vec3  rgb,       // original color of the pixel
                 float distance, // camera to point distance
                 float density);
@@ -119,6 +120,16 @@ void main(){
     float alpha = vec4(texture(material.diffuse, vertexData.textureCoordinates)).a;
     if(alpha < 0.5) {
         discard;
+    }
+
+    int cascade = 1;
+    for (int i = 0; i < NUM_CASCADES; i++)
+    {
+        if ( abs(vertexData.position.z) < cascadeFarPlanes[i] )
+        {
+            cascade = i;
+            break;
+        }
     }
     /*
     * Calculate lights
@@ -152,7 +163,8 @@ void main(){
     }
 
     // Calculate directional light shadows
-    shadows = calculateShadows(Normal_s, normalize(dirLight.direction), shadowTextures[0], 0);
+    //shadows = calculateShadows(Normal_s, normalize(dirLight.direction), shadowTextures[0], 0);
+    shadows = calculateCascadedShadows(Normal_s, normalize(dirLight.direction), cascadeShadowTextures[cascade], cascade);
     finalColor = shadows * finalColor;
 
     //================================================================================================================
@@ -260,6 +272,29 @@ float calculateShadows(vec3 normal, vec3 lightDir, sampler2D shadowTex, int inde
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowTex, 0);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+
+    // PCF
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowTex, currentFragPos.xy + vec2(x, y) * texelSize).r;
+            shadow += (currentFragPos.z - bias) > pcfDepth ? 0.0 : 1.0;
+        }
+    }
+
+    return shadow /= 9.0;
+}
+
+float calculateCascadedShadows(vec3 normal, vec3 lightDir, sampler2D shadowTex, int index) {
+
+    vec3 currentFragPos = cascadePositions[index].xyz / cascadePositions[index].w;
+    currentFragPos = currentFragPos * 0.5 + 0.5;
+    if (currentFragPos.z > 1) return 1.0;
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowTex, 0);
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.0005);
 
     // PCF
     for(int x = -1; x <= 1; ++x)

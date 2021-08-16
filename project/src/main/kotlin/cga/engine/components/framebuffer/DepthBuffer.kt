@@ -71,7 +71,7 @@ class DepthBuffer(private val resolution: Int = 1024, private val screenWidth: I
 
     fun bindCascadeDepthTexture(shaderProgram: ShaderProgram, index : Int = 0) {
 
-        GL30.glActiveTexture(GL30.GL_TEXTURE0 + 14 + index);
+        GL30.glActiveTexture(GL30.GL_TEXTURE0 + 16 + index);
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, depthMap);
         //println(shaderProgram.setUniform("shadowTexture", 3));
         shaderProgram.setUniform("cascadeShadowTextures[$index]", 14 + index);

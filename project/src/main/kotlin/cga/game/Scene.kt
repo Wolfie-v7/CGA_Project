@@ -96,13 +96,13 @@ class Scene(private val window: GameWindow) {
         // Shaders Initialization
 
         terrainShader = ShaderProgram("project/assets/shaders/terrain_vert.glsl", "project/assets/shaders/terrain_frag.glsl")
-        mainShader = ShaderProgram("project/assets/shaders/tronAnim_vert.glsl", "project/assets/shaders/tron_frag.glsl");
+        mainShader = ShaderProgram("project/assets/shaders/tronAnim_vert.glsl", "project/assets/shaders/tronCascaded_frag.glsl");
         skyboxShader = ShaderProgram("project/assets/shaders/skybox_vert.glsl", "project/assets/shaders/skybox_frag.glsl");
         postProcessShader = ShaderProgram("project/assets/shaders/postprocess_vert.glsl", "project/assets/shaders/postprocess_frag.glsl");
         depthMapShader = ShaderProgram("project/assets/shaders/depthMap_vert.glsl", "project/assets/shaders/depthMap_frag.glsl");
         depthMapInstShader = ShaderProgram("project/assets/shaders/depthMapInst_vert.glsl", "project/assets/shaders/depthMapInst_frag.glsl");
         depthMapDebugShader = ShaderProgram("project/assets/shaders/depthMapDebug_vert.glsl", "project/assets/shaders/depthMapDebug_frag.glsl");
-        instanceShader = ShaderProgram("project/assets/shaders/inst_vert.glsl", "project/assets/shaders/inst_frag.glsl")
+        instanceShader = ShaderProgram("project/assets/shaders/inst_vert.glsl", "project/assets/shaders/instCascaded_frag.glsl")
         waterShader = ShaderProgram("project/assets/shaders/water_vert.glsl","project/assets/shaders/water_frag.glsl")
         blurShader = ShaderProgram("project/assets/shaders/blur_vert.glsl","project/assets/shaders/blur_frag.glsl")
         collisionDebugShader = ShaderProgram("project/assets/shaders/collision_vert.glsl","project/assets/shaders/collision_frag.glsl")
@@ -446,6 +446,42 @@ class Scene(private val window: GameWindow) {
         //================================================================================================================================
 
         /**
+         * Instance Rendering
+         */
+        instanceShader.use()
+        Camera.bind(instanceShader);
+        (instanceShader.setUniform("clipPlane", Vector4f(0f, -1f, 0f, 2f)))
+
+        instanceShader.setUniform("NUM_SHADOWCASTERS",  sLightShadowMappers.size + 1);
+        instanceShader.setUniform("shadowMapsCount", sLightShadowMappers.size + 1);
+
+        //dirShadowMapper.configureMatrices(instanceShader, 0);
+        //dirShadowMapper.bindDepthTexture(instanceShader, 0);
+
+        cs.configureMatrices(instanceShader)
+        cs.bindDepthTextures(instanceShader)
+        for(m in sLightShadowMappers)
+        {
+            m.configureMatrices(instanceShader, sLightShadowMappers.indexOf(m) + 1);
+            m.bindDepthTexture(instanceShader, sLightShadowMappers.indexOf(m) + 1);
+        }
+
+        instanceShader.setUniform("viewPosition", Camera.getWorldPosition());
+
+        for(inst in Instances) {
+            view_norm_matrix = Camera.getCalculateViewMatrix();
+            view_norm_matrix.mul(inst.modelMatrix);
+            view_norm_matrix.invert();
+            instanceShader.setUniform("view_normal_matrix", view_norm_matrix, true);
+            inst.render(instanceShader);
+        }
+
+        DirectionalLight.bind(instanceShader, "dirLight", Camera.getCalculateViewMatrix());
+        for (pl in pointLights) pl.bind(instanceShader, "pointLights[${pointLights.indexOf(pl)}]");
+        for (sl in spotLights) sl.bind(instanceShader, "spotLights[${spotLights.indexOf(sl)}]", Camera.getCalculateViewMatrix());
+
+        //================================================================================================================================
+        /**
          * Terrain Rendering
          */
         terrainShader.use()
@@ -471,6 +507,7 @@ class Scene(private val window: GameWindow) {
         for (pl in pointLights) pl.bind(terrainShader, "pointLights[${pointLights.indexOf(pl)}]");
         for (sl in spotLights) sl.bind(terrainShader, "spotLights[${spotLights.indexOf(sl)}]", Camera.getCalculateViewMatrix());
 
+        view_norm_matrix = Camera.getCalculateViewMatrix();
         view_norm_matrix.mul(terrain.getModel()?.modelMatrix);
         view_norm_matrix.invert();
         terrainShader.setUniform("view_normal_matrix", view_norm_matrix, true);
@@ -479,39 +516,7 @@ class Scene(private val window: GameWindow) {
 
         //================================================================================================================================
 
-        /**
-         * Instance Rendering
-         */
-        instanceShader.use()
-        Camera.bind(instanceShader);
-        (instanceShader.setUniform("clipPlane", Vector4f(0f, -1f, 0f, 2f)))
 
-        instanceShader.setUniform("NUM_SHADOWCASTERS",  sLightShadowMappers.size + 1);
-        instanceShader.setUniform("shadowMapsCount", sLightShadowMappers.size + 1);
-
-        //dirShadowMapper.configureMatrices(instanceShader, 0);
-        //dirShadowMapper.bindDepthTexture(instanceShader, 0);
-        for(m in sLightShadowMappers)
-        {
-            m.configureMatrices(instanceShader, sLightShadowMappers.indexOf(m) + 1);
-            m.bindDepthTexture(instanceShader, sLightShadowMappers.indexOf(m) + 1);
-        }
-
-        instanceShader.setUniform("viewPosition", Camera.getWorldPosition());
-
-        for(inst in Instances) {
-            view_norm_matrix = Camera.getCalculateViewMatrix();
-            view_norm_matrix.mul(inst.modelMatrix);
-            view_norm_matrix.invert();
-            instanceShader.setUniform("view_normal_matrix", view_norm_matrix, true);
-            inst.render(instanceShader);
-        }
-
-        DirectionalLight.bind(instanceShader, "dirLight", Camera.getCalculateViewMatrix());
-        for (pl in pointLights) pl.bind(instanceShader, "pointLights[${pointLights.indexOf(pl)}]");
-        for (sl in spotLights) sl.bind(instanceShader, "spotLights[${spotLights.indexOf(sl)}]", Camera.getCalculateViewMatrix());
-
-        //================================================================================================================================
 
         /**
          * Main Rendering
@@ -525,6 +530,10 @@ class Scene(private val window: GameWindow) {
 
         //dirShadowMapper.configureMatrices(mainShader, 0);
         //dirShadowMapper.bindDepthTexture(mainShader, 0);
+
+        cs.configureMatrices(mainShader)
+        cs.bindDepthTextures(mainShader)
+
         for(m in sLightShadowMappers)
         {
             m.configureMatrices(mainShader, sLightShadowMappers.indexOf(m) + 1);
@@ -601,6 +610,9 @@ class Scene(private val window: GameWindow) {
 
         //dirShadowMapper.configureMatrices(terrainShader, 0);
         //dirShadowMapper.bindDepthTexture(terrainShader, 0);
+
+        cs.configureMatrices(terrainShader)
+        cs.bindDepthTextures(terrainShader)
         for(m in sLightShadowMappers)
         {
             m.configureMatrices(terrainShader, sLightShadowMappers.indexOf(m) + 1);
@@ -632,6 +644,9 @@ class Scene(private val window: GameWindow) {
 
         //dirShadowMapper.configureMatrices(instanceShader, 0);
         //dirShadowMapper.bindDepthTexture(instanceShader, 0);
+
+        cs.configureMatrices(instanceShader)
+        cs.bindDepthTextures(instanceShader)
         for(m in sLightShadowMappers)
         {
             m.configureMatrices(instanceShader, sLightShadowMappers.indexOf(m) + 1);
@@ -667,6 +682,9 @@ class Scene(private val window: GameWindow) {
 
         //dirShadowMapper.configureMatrices(mainShader, 0);
         //dirShadowMapper.bindDepthTexture(mainShader, 0);
+
+        cs.configureMatrices(mainShader)
+        cs.bindDepthTextures(mainShader)
         for(m in sLightShadowMappers)
         {
             m.configureMatrices(mainShader, sLightShadowMappers.indexOf(m) + 1);
@@ -731,6 +749,9 @@ class Scene(private val window: GameWindow) {
 
         //dirShadowMapper.configureMatrices(terrainShader, 0);
         //dirShadowMapper.bindDepthTexture(terrainShader, 0);
+
+        cs.configureMatrices(terrainShader)
+        cs.bindDepthTextures(terrainShader)
         for(m in sLightShadowMappers)
         {
             m.configureMatrices(terrainShader, sLightShadowMappers.indexOf(m) + 1);
@@ -762,6 +783,9 @@ class Scene(private val window: GameWindow) {
 
         //dirShadowMapper.configureMatrices(instanceShader, 0);
         //dirShadowMapper.bindDepthTexture(instanceShader, 0);
+
+        cs.configureMatrices(instanceShader)
+        cs.bindDepthTextures(instanceShader)
         for(m in sLightShadowMappers)
         {
             m.configureMatrices(instanceShader, sLightShadowMappers.indexOf(m) + 1);
@@ -797,6 +821,9 @@ class Scene(private val window: GameWindow) {
 
         //dirShadowMapper.configureMatrices(mainShader, 0);
         //dirShadowMapper.bindDepthTexture(mainShader, 0);
+
+        cs.configureMatrices(mainShader)
+        cs.bindDepthTextures(mainShader)
         for(m in sLightShadowMappers)
         {
             m.configureMatrices(mainShader, sLightShadowMappers.indexOf(m) + 1);
@@ -1095,11 +1122,11 @@ class Scene(private val window: GameWindow) {
 
     fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {
         // Save Current Player Position
-        if (key == GLFW.GLFW_KEY_Y && action == GLFW.GLFW_PRESS) {
+        if (key == GLFW.GLFW_KEY_G && action == GLFW.GLFW_PRESS) {
             Vector3Writer.save(Player?.getWorldPosition() ?: Vector3f(-999f))
         }
 
-        if (key == GLFW.GLFW_KEY_U && action == GLFW.GLFW_PRESS) Vector3Writer.write("project/assets/cache/PlayerPositions.txt")
+        if (key == GLFW.GLFW_KEY_F && action == GLFW.GLFW_PRESS) Vector3Writer.write("project/assets/cache/PlayerPositions.txt")
         //if (key == GLFW.GLFW_KEY_R && action == GLFW.GLFW_PRESS) cs.calculateBoundingBox(Camera.getCalculateProjectionMatrix().mul(Camera.getCalculateViewMatrix()))
     }
 
@@ -1109,7 +1136,7 @@ class Scene(private val window: GameWindow) {
 
     fun onMouseMove(xpos: Double, ypos: Double) {
         if(orbitMode) Camera.rotateAroundPoint(0.0f, DegToRad((currentMousePos.xpos - xpos).toFloat() * 0.07f), 0.0f, Vector3f(0.0f));
-        if(orbitMode) Camera.rotateAroundPoint(DegToRad((currentMousePos.ypos - ypos).toFloat() * 0.07f), 0.0f, 0.0f, Vector3f(0.0f));
+        //if(orbitMode) Camera.rotateAroundPoint(DegToRad((currentMousePos.ypos - ypos).toFloat() * 0.07f), 0.0f, 0.0f, Vector3f(0.0f));
     }
 
     fun cleanup() {

@@ -58,7 +58,7 @@ void main()
     //if(bUseFakeLighting) nor = view_normal_matrix * vec4(0.0, 1.0, 0.0, 0.0);
     gl_Position = proj_vec ;
 
-    vertexData.position = vec3((view_matrix * model_matrix) * vec4(position.xyz, 1.0f));
+    vertexData.position = vec3(view_matrix * worldPosition);
     vertexData.textureCoordinates = tcMul * texCoor;
     vertexData.normal = nor.xyz;
     vertexData.lightSpacePosition = lightSpaceMatrix * model_matrix * vec4(position, 1.0f);

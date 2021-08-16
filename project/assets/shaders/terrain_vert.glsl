@@ -56,7 +56,7 @@ void main()
     //mat3 TBN = transpose(mat3(T, B, N));
     gl_Position = proj_vec ;
 
-    vertexData.position = vec3((view_matrix * model_matrix) * vec4(position.xyz, 1.0f));
+    vertexData.position = vec3((view_matrix * model_matrix) * vec4(position, 1.0f));
     vertexData.textureCoordinates = texCoor;
     vertexData.normal = nor.xyz;
     vertexData.lightSpacePosition = lightSpaceMatrix * model_matrix * vec4(position, 1.0f);

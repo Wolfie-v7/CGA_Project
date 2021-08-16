@@ -15,7 +15,7 @@ class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val ligh
 
     private val z_near = camera.ZNear
     private val z_far = camera.ZFar
-    val CASCADE_Z_SPLITS = floatArrayOf(z_near, z_far / 100f, z_far / 20f, z_far/ 4f, z_far / 2f)
+    val CASCADE_Z_SPLITS = floatArrayOf(z_near, z_far / 100f, z_far / 50f, z_far/ 20f, z_far / 4f)
     //val shadowMappers : Array<ShadowMapper> = TODO()
     var lightViewMatrices = Array(NUM_CASCADES) { Matrix4f() }
     var lightProjectionMatrices = Array(NUM_CASCADES) { Matrix4f() }
@@ -35,7 +35,7 @@ class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val ligh
 
     init {
         for (i in 0 until NUM_CASCADES) {
-            val mapper = DirLightShadowMapper(4096, width, height, lightSource, camera, CASCADE_Z_SPLITS[i], CASCADE_Z_SPLITS[i + 1])
+            val mapper = DirLightShadowMapper(2048, width, height, lightSource, camera, CASCADE_Z_SPLITS[i], CASCADE_Z_SPLITS[i + 1])
             shadowMappersList.add(mapper)
         }
     }
@@ -49,7 +49,7 @@ class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val ligh
     }
 
     fun uploadZSplits(shader: ShaderProgram, index: Int) {
-        shader.setUniform("cascadeFarPlanes[$index]", CASCADE_Z_SPLITS[index])
+        shader.setUniform("cascadeFarPlanes[$index]", CASCADE_Z_SPLITS[index + 1])
     }
 
     fun configureMatrices(shader: ShaderProgram) {
