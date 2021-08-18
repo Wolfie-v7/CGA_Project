@@ -12,8 +12,8 @@
 - Post-Processing (inkl. Gamma Correction, HDR, Bloom)
 - Third-Person-Kamera
 - Verschiedene Shaderprogramme: Phong, Skybox, Instancing, DepthMap, Post-Processing, Wasseroberfläche, Weichzeichnen(Gaussian Blur)...
-- Cascaded Shadow Mapping //TO DO//
-- Terrain-Generierung (Heighmap, Voronoi-Muster, Texturmischung)
+- Cascaded Shadow Mapping
+- Terrain-Generierung (Heightmap, Voronoi-Muster, Texturmischung)
 - Normal mapping
 - Wasseroberfläche (Texturanimation mittels DuDvMap)
 - Instanzierung

@@ -18,6 +18,7 @@ class RenderableInstance(private var base : Renderable,
     private val vboSize = instanceCount * 16
     private var floatArray = FloatArray(vboSize);
     private var meshAttribs = base.MeshList[0].attribCount;
+    val instances = mutableListOf<Transformable>()
 
 
     init {
@@ -47,6 +48,7 @@ class RenderableInstance(private var base : Renderable,
         for(i in 0 until instanceCount) {
             val t = Transformable(this.getLocalModelMatrix())
             updateFunction(t, i)
+            instances.add(t)
             val mat = Matrix4f(t.getLocalModelMatrix())
             list.add(mat.m00());
             list.add(mat.m01());

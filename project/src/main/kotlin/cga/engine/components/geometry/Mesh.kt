@@ -132,8 +132,8 @@ class Mesh(private val vertexdata: FloatArray,
         GL30.glBindVertexArray(0)
     }
 
-    fun playAnimation(animation: Animation?, playbackSpeed: Float = 1f) {
-        animator.playAnimation(animation, playbackSpeed)
+    fun playAnimation(animation: Animation?, playbackSpeed: Float = 1f, loop: Boolean = false) {
+        animator.playAnimation(animation, playbackSpeed, loop)
     }
 
     fun stopAnimation () = animator.stopAnimation()

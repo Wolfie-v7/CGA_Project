@@ -29,6 +29,7 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL30.GL_CLIP_DISTANCE0
+import java.util.*
 import kotlin.math.PI
 
 
@@ -36,6 +37,7 @@ import kotlin.math.PI
  * Created by Fabian on 16.09.2017.
  */
 class Scene(private val window: GameWindow) {
+
 
     private var cs: CascadedShadowMapper
     private val playerPositions = mutableListOf<Vector3f>()
@@ -61,6 +63,8 @@ class Scene(private val window: GameWindow) {
     private var dirShadowMapper : DirLightShadowMapper;
     private var sLightShadowMappers = mutableListOf<SpotLightShadowMapper>();
     private var treeRen : Renderable?
+    private val spawnQueue: Queue<Actor> = LinkedList<Actor>()
+    private val despawnQueue: Queue<Actor> = LinkedList<Actor>()
 
     private var orbitMode: Boolean = false;
     private var Player: Renderable?;
@@ -116,41 +120,52 @@ class Scene(private val window: GameWindow) {
         glDepthFunc(GL_LESS); GLError.checkThrow();
         //glEnable(GL_FRAMEBUFFER_SRGB)
 
-//===================================================================
+        //===================================================================
         // Terrain
         //===================================================================
-        val grass = Material(Texture2D.invoke("project/assets/textures/forrest_ground_diff.png",
+        val grass = Material(Texture2D.invoke("project/assets/textures/forest01Mat/forest_d.png",
             genMipMaps = true,
             isSRGB = true
         ),
             Texture2D.invoke("project/assets/textures/grass_emit.png", true),
             Texture2D.invoke("project/assets/textures/grass_emit.png", true),
             100f, Vector2f(512f, 512f));
-        grass.normalMap = Texture2D("project/assets/textures/forrest_ground_n.png", true);
+        grass.normalMap = Texture2D("project/assets/textures/forest01Mat/forest_n.png", true);
+
+        val ground = Material(Texture2D.invoke("project/assets/textures/forest02Mat/grass_d.jpg",
+            genMipMaps = true,
+            isSRGB = true
+        ),
+            Texture2D.invoke("project/assets/textures/grass_emit.png", true),
+            Texture2D.invoke("project/assets/textures/grass_emit.png", true),
+            100f, Vector2f(512f, 512f))
+        ground.normalMap = Texture2D("project/assets/textures/forest02Mat/grass_n.jpg", true);
+
+        val wetPebble = Material(Texture2D.invoke("project/assets/textures/TerrainTextures/WetPebblesTextures/Ground_Wet_Pebbles_001_basecolor.jpg",
+            genMipMaps = true,
+            isSRGB = true
+        ),
+            Texture2D.invoke("project/assets/textures/grass_emit.png", true),
+            Texture2D.invoke("project/assets/textures/TerrainTextures/WetPebblesTextures/Ground_Wet_Pebbles_001_specular.jpg", true),
+            100f, Vector2f(512f, 512f))
+        wetPebble.normalMap = Texture2D("project/assets/textures/TerrainTextures/WetPebblesTextures/Ground_Wet_Pebbles_001_normal.jpg", true)
+
+        val mountain = Material(Texture2D.invoke("project/assets/textures/TerrainTextures/RockTextures/Rock_042_BaseColor.jpg",
+            genMipMaps = true,
+            isSRGB = true
+        ),
+            Texture2D.invoke("project/assets/textures/grass_emit.png", true),
+            Texture2D.invoke("project/assets/textures/grass_emit.png", true),
+            100f, Vector2f(8f, 8f))
+        mountain.normalMap = Texture2D("project/assets/textures/TerrainTextures/RockTextures/Rock_042_Normal.jpg", true)
+
         val terrainMat = TerrainMaterial(
-            Texture2D("project/assets/textures/TerrainTextures/blendMapR4.png", true),
-            Material(Texture2D.invoke("project/assets/textures/TerrainTextures/mountain_512.png",
-                genMipMaps = true,
-                isSRGB = true
-            ),
-                Texture2D.invoke("project/assets/textures/grass_emit.png", true),
-                Texture2D.invoke("project/assets/textures/grass_emit.png", true),
-                100f, Vector2f(8f, 8f)),
-            Material(Texture2D.invoke("project/assets/textures/grass_diff.png",
-                genMipMaps = true,
-                isSRGB = true
-            ),
-                Texture2D.invoke("project/assets/textures/grass_emit.png", true),
-                Texture2D.invoke("project/assets/textures/grass_emit.png", true),
-                100f, Vector2f(256f, 256f)),
-            Material(Texture2D.invoke("project/assets/textures/TerrainTextures/Ground_Wet_Rocks_002_basecolor.jpg",
-                genMipMaps = true,
-                isSRGB = true
-            ),
-                Texture2D.invoke("project/assets/textures/grass_emit.png", true),
-                Texture2D.invoke("project/assets/textures/TerrainTextures/Ground_Wet_Rocks_002_roughness.jpg", true),
-                100f, Vector2f(1024f, 1024f)),
-            grass)
+            blendMap = Texture2D("project/assets/textures/TerrainTextures/blendMapR4.png", true),
+            rMaterial = mountain,
+            gMaterial = ground,
+            bMaterial = wetPebble,
+            backgroundMat = grass
+        )
         terrain = Terrain(0, 0, terrainMat, "project/assets/textures/Heightmaps/heightmap_f.png");
 
         lake = WaterSurface(Vector3f(-330f, -1f, -480f), Vector3f(0f), 500f)
@@ -187,7 +202,7 @@ class Scene(private val window: GameWindow) {
 
         val grassObj = ModelLoader.loadModel("project/assets/models/grass.obj", 0f, 0f, 0f);
         grassObj?.MeshList?.forEach { it.bHasTransparency = true; it.material?.diff?.setTexParams(GL30.GL_CLAMP_TO_EDGE, GL30.GL_CLAMP_TO_EDGE, GL30.GL_LINEAR_MIPMAP_LINEAR, GL30.GL_LINEAR_MIPMAP_LINEAR) }
-        val grassPositions = PositionGenerator.generatePositions(500, Vector3f(-30f, 0f, -50f), Vector3f(50f, 0f, 10f), 2, 0, 2)
+        val grassPositions = PositionGenerator.generatePositions(500, Vector3f(-30f, 0f, -50f), Vector3f(50f, 0f, 10f), 2, 0, 2, terrain)
         val grassInst = grassObj?.let { g ->
             grassPositions?.let { RenderableInstance(g, it, 500, grassObj.getWorldModelMatrix())}
 
@@ -376,11 +391,12 @@ class Scene(private val window: GameWindow) {
         collisionBoxes.add(box);
 
 
-        for(i in 0 until 3) {
+        for(i in 0 until (treeInst?.instances?.size ?: 0)) {
             val treeCollision = CollisionMesh(boxVertices, boxIndices, arrayOf(VertexAttribute(3, GL_FLOAT, 12, 0)))
-            treesPositions?.get(i)?.let {
-                treeCollision.translateLocal(it)
-                treeCollision.translateLocal(Vector3f(0f, 1f, 0f))
+            treeInst?.instances?.get(i)?.getWorldPosition().let {
+                //treeCollision.translateGlobal(it)
+                treeCollision.modelMatrix.translate(it)
+                treeCollision.translateLocal(Vector3f(0f, 2f, 0f))
             }
             collisionBoxes.add(treeCollision)
         }
@@ -933,6 +949,10 @@ class Scene(private val window: GameWindow) {
 
     fun update(dt: Float, t: Float) {
 
+        // FIRST THING TO DO: Handle Spawning and Despawning
+        while (spawnQueue.isNotEmpty()) ActorList.add(spawnQueue.poll())
+        while (despawnQueue.isNotEmpty()) ActorList.remove(despawnQueue.poll())
+
         collisionHandler.update(dt, t)
         Renderables.forEach {it.update(dt)}
         ActorList.forEach {
@@ -940,9 +960,9 @@ class Scene(private val window: GameWindow) {
             else it.Update(dt, t)
         }
 
-        if (accelerate) Player?.playAnimation(0, 4f)
+        /*if (accelerate) Player?.playAnimation(0, 4f)
         else if(window.getKeyState(GLFW.GLFW_KEY_X)) Player?.playAnimation(1)
-        else Player?.stopAnimation()
+        else Player?.stopAnimation()*/
 
 
         /**
@@ -956,8 +976,8 @@ class Scene(private val window: GameWindow) {
          *
          * Mouse Right Click - Camera Orbit Mode
          */
-        accelerate = window.getKeyState(GLFW.GLFW_KEY_W);
-        if(window.getKeyState(GLFW.GLFW_KEY_S))
+        //accelerate = window.getKeyState(GLFW.GLFW_KEY_W);
+        /*if(window.getKeyState(GLFW.GLFW_KEY_S))
         {
             if(!brake && !reverse)
             {
@@ -971,7 +991,7 @@ class Scene(private val window: GameWindow) {
         }
         leanLeft = window.getKeyState(GLFW.GLFW_KEY_A);
         leanRight = window.getKeyState(GLFW.GLFW_KEY_D);
-        if(window.getKeyState(GLFW.GLFW_KEY_SPACE)) jumpState = true;
+        if(window.getKeyState(GLFW.GLFW_KEY_SPACE)) jumpState = true;*/
         currentMousePos = window.mousePos; // store current mouse Position every frame
 
 
@@ -986,7 +1006,7 @@ class Scene(private val window: GameWindow) {
             if(!reverse)
             {
                 brake = false;
-                if (fwdSpeed > -3000.0 * dt) fwdSpeed += acceleration * dt;
+                if (fwdSpeed > -300.0 * dt) fwdSpeed += acceleration * dt;
                 Player?.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
                 CameraArm.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
                 if (leanLeft || leanRight) {
@@ -1122,6 +1142,8 @@ class Scene(private val window: GameWindow) {
     }
 
     fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {
+
+        PlayerActor?.OnKey(key, scancode, action, mode)
         // Save Current Player Position
         if (key == GLFW.GLFW_KEY_G && action == GLFW.GLFW_PRESS) {
             Vector3Writer.save(Player?.getWorldPosition() ?: Vector3f(-999f))
@@ -1132,6 +1154,7 @@ class Scene(private val window: GameWindow) {
     }
 
     fun onMouseButton(button: Int, action: Int, mode: Int) {
+        for (actor in ActorList) actor.OnMouseButon(button, action, mode)
         if(button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) { orbitMode = action == GLFW.GLFW_PRESS; }
     }
 
@@ -1158,7 +1181,10 @@ class Scene(private val window: GameWindow) {
     }
 
     fun removeActor(actor: Actor) {
-        ActorList.remove(actor);
+        if (ActorList.contains(actor)) {
+            despawnQueue.add(actor)
+        }
+
     }
 
     fun BeginPlay() {
@@ -1170,5 +1196,17 @@ class Scene(private val window: GameWindow) {
     }
 
     fun getWorldTerrain() = terrain
+    fun getWindow() = window
+    fun getKeyState(key: Int) = window.getKeyState(key)
+
+    fun spawnActor(actor: Actor, location: Vector3f, rotation: Vector3f) : Actor{
+        val actorInst = Actor(actor.world, actor.Mesh, actor.count, actor.bIsInstanced)
+        if (actorInst.Mesh is Renderable) {
+            (actorInst.Mesh as Renderable).rotateLocal(rotation.x(), rotation.y(), rotation.z())
+            (actorInst.Mesh as Renderable).translateLocal(location)
+        }
+        spawnQueue.add(actorInst)
+        return actorInst
+    }
 
 }

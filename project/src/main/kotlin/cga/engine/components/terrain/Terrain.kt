@@ -26,6 +26,8 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
     private var gridCellSize = 0f
 
     var heights: Array<FloatArray> = Array(VERTEX_COUNT) { FloatArray(VERTEX_COUNT) }
+    var vectors: Array<Vector3f> = Array(VERTEX_COUNT * VERTEX_COUNT) { Vector3f() }
+    var texCoords: Array<Vector2f> = Array(VERTEX_COUNT * VERTEX_COUNT) { Vector2f() }
     private var x : Float = 0f // World X Coordinate
     private var z : Float = 0f // World Z Coordinate
     private var model : Renderable? = null
@@ -52,13 +54,15 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
 
         VERTEX_COUNT = image!!.getHeight()
         this.heights = Array(VERTEX_COUNT) { FloatArray(VERTEX_COUNT) }
+        this.vectors = Array(VERTEX_COUNT * VERTEX_COUNT) {Vector3f()}
+        this.texCoords = Array(VERTEX_COUNT * VERTEX_COUNT) { Vector2f() }
 
         val count = VERTEX_COUNT * VERTEX_COUNT
         val vertices = FloatArray(count * 3)
         val normals = FloatArray(count * 3)
         val textureCoords = FloatArray(count * 2)
         val indices = IntArray(6 * (VERTEX_COUNT - 1) * (VERTEX_COUNT - 1))
-        val vertexData = FloatArray(count * 8)
+        val vertexData = FloatArray(count * 14)
         var vertexPointer = 0
         //println(image.type)
         for (i in 0 until VERTEX_COUNT) {
@@ -79,23 +83,30 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
                 val height = calculateHeight(j, i, image)
                 heights[j][i] = height
                 // Vector
-                vertexData[vertexPointer * 8] = j.toFloat() / (VERTEX_COUNT - 1).toFloat() * SIZE
-                vertexData[vertexPointer * 8 + 1] = height
-                vertexData[vertexPointer * 8 + 2] = i.toFloat() / (VERTEX_COUNT - 1).toFloat() * SIZE
+                val vec = Vector3f(j.toFloat() / (VERTEX_COUNT - 1).toFloat() * SIZE, height, i.toFloat() / (VERTEX_COUNT - 1).toFloat() * SIZE)
+                this.vectors[vertexPointer] = vec
+                vertexData[vertexPointer * 14] = vec.x()
+                vertexData[vertexPointer * 14 + 1] = vec.y()
+                vertexData[vertexPointer * 14 + 2] = vec.z()
 
                 // Texture Coordinates
-                vertexData[vertexPointer * 8 + 3] = j.toFloat() / (VERTEX_COUNT - 1).toFloat()
-                vertexData[vertexPointer * 8 + 4] = i.toFloat() / (VERTEX_COUNT - 1).toFloat()
+                val uv = Vector2f(j.toFloat() / (VERTEX_COUNT - 1).toFloat(), i.toFloat() / (VERTEX_COUNT - 1).toFloat())
+                this.texCoords[vertexPointer] = uv
+                vertexData[vertexPointer * 14 + 3] = uv.x()
+                vertexData[vertexPointer * 14 + 4] = uv.y()
 
                 // Normal
                 val normal = calculateNormal(j, i, image)
-                vertexData[vertexPointer * 8 + 5] = normal.x
-                vertexData[vertexPointer * 8 + 6] = normal.y
-                vertexData[vertexPointer * 8 + 7] = normal.z
+                vertexData[vertexPointer * 14 + 5] = normal.x
+                vertexData[vertexPointer * 14 + 6] = normal.y
+                vertexData[vertexPointer * 14 + 7] = normal.z
 
                 vertexPointer++
             }
         }
+
+
+
         var pointer = 0
         for (gz in 0 until VERTEX_COUNT - 1) {
             for (gx in 0 until VERTEX_COUNT - 1) {
@@ -112,26 +123,91 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
             }
         }
 
-        val mesh = Mesh(vertexData, indices, arrayOf(VertexAttribute(3, GL_FLOAT, 32, 0),
-                VertexAttribute(2, GL_FLOAT, 32, 12),
-                VertexAttribute(3, GL_FLOAT, 32, 20)))
+        vertexPointer = 0
+        //println("${vectors.size} == ${texCoords.size}")
+
+        //println(indices.size)
+        for (i in 0 .. (vectors.size - 3) step 3) {
+            //println(i)
+            val v0 = vectors[indices[i]]
+            val v1 = vectors[indices[i + 1]]
+            val v2 = vectors[indices[i + 2]]
+
+            println("$v0 : $v1 : $v2")
+
+            val uv0 = texCoords[indices[i]]
+            val uv1 = texCoords[indices[i + 1]]
+            val uv2 = texCoords[indices[i + 2]]
+
+            //println("$uv0 : $uv1 : $uv2")
+
+            val deltaPos1 = v1.sub(v0, Vector3f())
+            val deltaPos2 = v2.sub(v0, Vector3f())
+
+            val deltaUV1 = uv1.sub(uv0, Vector2f())
+            val deltaUV2 = uv2.sub(uv0, Vector2f())
+
+            //println("$deltaUV1 : $deltaUV2")
+
+            val r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x)
+
+            val tangent = ((deltaPos1.mul(deltaUV2.y, Vector3f())).sub(deltaPos2.mul(deltaUV1.y, Vector3f()), Vector3f())).mul(r);
+            val bitangent = ((deltaPos2.mul(deltaUV1.x, Vector3f())).sub(deltaPos1.mul(deltaUV2.x, Vector3f()), Vector3f())).mul(r);
+
+            println("$i : $r : $deltaPos1 $deltaPos2")
+            vertexData[vertexPointer * 14 + 8] = tangent.x()
+            vertexData[vertexPointer * 14 + 9] = tangent.y()
+            vertexData[vertexPointer * 14 + 10] = tangent.z()
+
+            vertexData[vertexPointer * 14 + 11] = bitangent.x()
+            vertexData[vertexPointer * 14 + 12] = bitangent.y()
+            vertexData[vertexPointer * 14 + 13] = bitangent.z()
+
+            vertexPointer++;
+
+            vertexData[vertexPointer * 14 + 8] = tangent.x()
+            vertexData[vertexPointer * 14 + 9] = tangent.y()
+            vertexData[vertexPointer * 14 + 10] = tangent.z()
+
+            vertexData[vertexPointer * 14 + 11] = bitangent.x()
+            vertexData[vertexPointer * 14 + 12] = bitangent.y()
+            vertexData[vertexPointer * 14 + 13] = bitangent.z()
+
+            vertexPointer++;
+
+            vertexData[vertexPointer * 14 + 8] = tangent.x()
+            vertexData[vertexPointer * 14 + 9] = tangent.y()
+            vertexData[vertexPointer * 14 + 10] = tangent.z()
+
+            vertexData[vertexPointer * 14 + 11] = bitangent.x()
+            vertexData[vertexPointer * 14 + 12] = bitangent.y()
+            vertexData[vertexPointer * 14 + 13] = bitangent.z()
+
+            vertexPointer++;
+        }
+
+        val mesh = Mesh(vertexData, indices, arrayOf(VertexAttribute(3, GL_FLOAT, 56, 0),
+            VertexAttribute(2, GL_FLOAT, 56, 12),
+            VertexAttribute(3, GL_FLOAT, 56, 20),
+            VertexAttribute(3,GL_FLOAT, 56, 32),
+            VertexAttribute(3,GL_FLOAT, 56, 44)
+        ))
 
         return Renderable(mutableListOf(mesh))
     }
 
     private fun calculateHeight(x : Int, y : Int, image: BufferedImage) : Float {
         if (x < 0 || x >= image.height || y < 0 || y >= image.height) return 0f
-        var height = image.getRGB(x, y).toFloat()
+
+
         val intArray = IntArray(1)
         var newHeight = image.raster.getPixel(x, y, intArray)[0].toFloat()
-        //println(newHeight)
-        /*height += (MAX_PIXEL_COLOR / 2f)
-        height /= (MAX_PIXEL_COLOR / 2f)
-        height *= MAX_HEIGHT //height += MAX_HEIGHT - 10
-        return height*/
         newHeight -= (MAX_PIXEL_COLOR / 2f)
         newHeight /= (MAX_PIXEL_COLOR / 2f)
         newHeight *= MAX_HEIGHT
+
+        //val variation = -0.1f + Random.nextFloat() * 0.2f
+        //newHeight += variation
 
         return newHeight
     }
@@ -177,7 +253,7 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
         val gridZ = floor(relativeZ / this.gridCellSize).toInt()
 
 
-        if (gridX >= (heights.size - 1) || gridX < 0 || gridZ >= (heights.size - 1) || gridZ < 0) return 0f
+        if (gridX >= (heights.size - 1) || gridX < 0 || gridZ >= (heights.size - 1) || gridZ < 0) return -999f
 
         val coordX = (relativeX % this.gridCellSize) / this.gridCellSize
         val coordZ = (relativeZ % this.gridCellSize) / this.gridCellSize

@@ -75,8 +75,8 @@ void main()
     viewMat = view_matrix;
     distanceToCamera  = length((view_matrix * model_matrix * vec4(position, 1.0f)).xyz);
 
-    vec4 tan = view_normal_matrix * vec4(tangent, 0.0f);
-    vec4 bit = view_normal_matrix * vec4(bitangent, 0.0f);
+    vec4 tan = transpose(inverse(view_matrix * model_matrix)) * vec4(tangent, 0.0f);
+    vec4 bit = transpose(inverse(view_matrix * model_matrix)) * vec4(bitangent, 0.0f);
 
     vec3 T = normalize(vec3(tan));
     vec3 B = normalize(vec3(bit));

@@ -182,7 +182,7 @@ void main(){
         finalColor += calculateSpotLight(spotLights[i], Normal_s, vertexData.position, ViewDir);
     }
     // Directional light
-    finalColor += calculateDirectionalLight(dirLight, Normal_s, ViewDir, 1.0f);
+    finalColor += calculateDirectionalLight(dirLight, Normal, ViewDir, 1.0f);
 
 
     //================================================================================================================
@@ -253,7 +253,7 @@ void blendTextures()
     vec3 rSpecular = vec3(textureUntileAlt(rMaterial.specular, rTCoords)) * blendMapColor.r;
     vec3 rEmission = rMaterial.emissionColor * vec3(textureUntileAlt(rMaterial.emission, rTCoords));
     vec3 rNormal = textureUntileAlt(rMaterial.normal, rTCoords).rgb * blendMapColor.r;
-    rNormal = normalize(rNormal * 2.0 - 1.0);
+    //rNormal = normalize(rNormal * 2.0 - 1.0);
 
     // G Texture
     vec2 gTCoords = gMaterial.tcMul * vertexData.textureCoordinates;
@@ -261,7 +261,7 @@ void blendTextures()
     vec3 gSpecular = vec3(textureUntileAlt(gMaterial.specular, gTCoords)) * blendMapColor.g;
     vec3 gEmission = gMaterial.emissionColor * vec3(textureUntileAlt(gMaterial.emission, gTCoords));
     vec3 gNormal = textureUntileAlt(gMaterial.normal, gTCoords).rgb * blendMapColor.g;
-    gNormal = normalize(gNormal * 2.0 - 1.0);
+    //gNormal = normalize(gNormal * 2.0 - 1.0);
 
     // B Texture
     vec2 bTCoords = bMaterial.tcMul * vertexData.textureCoordinates;
@@ -269,7 +269,7 @@ void blendTextures()
     vec3 bSpecular = vec3(textureUntileAlt(bMaterial.specular, bTCoords)) * blendMapColor.b;
     vec3 bEmission = bMaterial.emissionColor * vec3(textureUntileAlt(bMaterial.emission, bTCoords));
     vec3 bNormal = textureUntileAlt(bMaterial.normal, bTCoords).rgb * blendMapColor.b;
-    bNormal = normalize(bNormal * 2.0 - 1.0);
+    //bNormal = normalize(bNormal * 2.0 - 1.0);
 
 
     // Mixing
@@ -284,7 +284,9 @@ void blendTextures()
     blendedTex.ambient = 0.1 * finalDiffuse;
     blendedTex.diffuse = finalDiffuse;
     blendedTex.specular = finalSpecular;
-    blendedTex.normal = bgNormal;
+    //blendedTex.normal = mix(mix(mix(bgNormal, rNormal, 0.5), bNormal, 0.5), gNormal, 0.5);
+    blendedTex.normal = finalNormal;
+    //blendedTex.normal = gNormal;
     blendedTex.emission = finalEmission;
     blendedTex.shininess = finalShininess;
 }

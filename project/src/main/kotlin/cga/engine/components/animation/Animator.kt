@@ -7,29 +7,32 @@ class Animator(val mesh: Mesh) {
     private var animationSpeed: Float = 1f
     private var currentAnimation: Animation? = null
     private var animationTime = 0f
+    private var looping: Boolean = false
 
-    fun playAnimation(animation: Animation?, playbackSpeed: Float = 1f) {
+    fun playAnimation(animation: Animation?, playbackSpeed: Float = 1f, loop: Boolean = false) {
         if(animation != currentAnimation) {
             animationSpeed = playbackSpeed
             currentAnimation = animation
             animationTime = 0f
+            looping = loop
         }
 
     }
 
     fun stopAnimation() {
+        animationSpeed = 1f
         currentAnimation = null
         animationTime = 0f
+        looping = false
     }
 
 
     fun update(dt: Float) {
+        increaseTime(dt)
         if(currentAnimation == null) {
-            applyRestPose(mesh.rootBone!!, Matrix4f())
+            mesh.rootBone?.let { applyRestPose(it, Matrix4f()) }
             return
         }
-
-        increaseTime(dt)
         val currentPose = calculateCurrentAnimationPose()
         applyPoseToBones(currentPose, mesh.rootBone!!, Matrix4f())
     }
@@ -82,8 +85,12 @@ class Animator(val mesh: Mesh) {
     }
 
     private fun increaseTime(dt: Float) {
+        if (currentAnimation == null) return
         animationTime += dt * animationSpeed
-        if(animationTime > currentAnimation!!.duration) this.animationTime %= currentAnimation!!.duration
+        if(animationTime > currentAnimation!!.duration) {
+            if (looping) this.animationTime %= currentAnimation!!.duration
+            else stopAnimation()
+        }
     }
 
 }

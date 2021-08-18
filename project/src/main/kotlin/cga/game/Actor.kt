@@ -5,7 +5,7 @@ import cga.engine.components.shader.ShaderProgram
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
-abstract class Actor(var world : Scene, var Mesh : IRenderable?, count: Int = 1, val bIsInstanced: Boolean = false) {
+open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1, val bIsInstanced: Boolean = false) {
     private var SceneRoot : Transformable = Transformable();
     open var collisionMesh : Mesh? = null;
     //var WorldPosition = SceneRoot.getWorldPosition();
@@ -24,9 +24,9 @@ abstract class Actor(var world : Scene, var Mesh : IRenderable?, count: Int = 1,
     }
 
     open fun Destroy() {
-        if(world.contains(this)) {
-            OnDestroy(); world.removeActor(this); Mesh?.destroy()
-        }
+            OnDestroy();
+            world.removeActor(this);
+            Mesh?.destroy()
     }
     open fun Render(shaderProgram: ShaderProgram) { if(bIsVisible) Mesh?.render(shaderProgram) }
     open fun Update(dt : Float, t : Float) { Mesh?.update(dt) }
@@ -36,6 +36,10 @@ abstract class Actor(var world : Scene, var Mesh : IRenderable?, count: Int = 1,
         val mesh = Mesh as Renderable
         return mesh.getWorldModelMatrix()
     }
+
+    open fun OnKey(key: Int, scancode: Int, action: Int, mode: Int) {}
+    open fun OnMouseButon(button: Int, action: Int, mode: Int) {}
+    open fun OnMouseMove(xpos: Double, ypos: Double) {}
 
     fun getWorldPosition(): Vector3f {
         return SceneRoot.getWorldPosition()

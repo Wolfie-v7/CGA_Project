@@ -11,6 +11,7 @@ class Renderable(var MeshList : MutableList<Mesh>, var _modelMatrix : Matrix4f =
 {
 
     val animations = mutableListOf<Animation>()
+    var currentAnimation = -1
 
     override fun render(shaderProgram: ShaderProgram) {
 
@@ -42,12 +43,21 @@ class Renderable(var MeshList : MutableList<Mesh>, var _modelMatrix : Matrix4f =
         for (mesh in MeshList) mesh.update(dt)
     }
 
-    fun playAnimation(index: Int, playbackSpeed: Float = 1f) {
-        for (m in MeshList) m.playAnimation(animations[index] ?: null, playbackSpeed)
+    fun playAnimation(index: Int, playbackSpeed: Float = 1f, loop: Boolean = false) {
+        currentAnimation = index
+        for (m in MeshList) m.playAnimation(animations[index] ?: null, playbackSpeed, loop)
     }
 
     fun stopAnimation() {
+        currentAnimation = -1
         for (m in MeshList) m.stopAnimation()
+    }
+
+    fun stopAnimation(index: Int) {
+        if (currentAnimation == index) {
+            currentAnimation = -1
+            for (m in MeshList) m.stopAnimation()
+        }
     }
 
     fun addAnimation(animation: Animation) = animations.add(animation)

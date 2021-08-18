@@ -50,9 +50,9 @@ void main()
     vec4 bit = view_normal_matrix * vec4(bitangent, 0.0f);
     vec4 nor = view_normal_matrix * vec4(normal, 0.0f);
 
-    vec3 T = normalize(vec3(tan));
-    vec3 B = normalize(vec3(bit));
-    vec3 N = normalize(vec3(nor));
+    vec3 T = normalize(tan.xyz);
+    vec3 B = normalize(bit.xyz);
+    vec3 N = normalize(nor.xyz);
     //mat3 TBN = transpose(mat3(T, B, N));
     gl_Position = proj_vec ;
 
@@ -73,7 +73,7 @@ void main()
 
     viewMat = view_matrix;
     distanceToCamera  = length((view_matrix * model_matrix * vec4(position, 1.0f)).xyz);
-    fs_TBN = mat3(T, B, N);
+    fs_TBN = (mat3(T, B, N));
 
 
 }
