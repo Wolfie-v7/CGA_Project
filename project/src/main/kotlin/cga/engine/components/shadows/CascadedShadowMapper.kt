@@ -16,7 +16,6 @@ class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val ligh
     private val z_near = camera.ZNear
     private val z_far = camera.ZFar
     val CASCADE_Z_SPLITS = floatArrayOf(z_near, z_far / 100f, z_far / 50f, z_far/ 20f, z_far / 4f)
-    //val shadowMappers : Array<ShadowMapper> = TODO()
     var lightViewMatrices = Array(NUM_CASCADES) { Matrix4f() }
     var lightProjectionMatrices = Array(NUM_CASCADES) { Matrix4f() }
     var cascadesMatrices = Array(NUM_CASCADES) { Matrix4f() }
