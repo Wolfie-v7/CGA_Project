@@ -35,7 +35,8 @@ class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val ligh
 
     init {
         for (i in 0 until NUM_CASCADES) {
-            val mapper = DirLightShadowMapper(2048, width, height, lightSource, camera, CASCADE_Z_SPLITS[i], CASCADE_Z_SPLITS[i + 1])
+            val res = if (i > 2) 4096 else 2048
+            val mapper = DirLightShadowMapper(res, width, height, lightSource, camera, CASCADE_Z_SPLITS[i], CASCADE_Z_SPLITS[i + 1])
             shadowMappersList.add(mapper)
         }
     }

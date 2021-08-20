@@ -58,7 +58,7 @@ class GameKey(private val _world: Scene, val _mesh: Renderable, var type: KeyTyp
     private fun checkLock(lock: GameLock?): Boolean {
         if (lock == null) return false
         val distance = lock.getWorldPosition().sub(getWorldPosition()).length()
-        return distance <= 5f
+        return distance <= 2f
     }
 }
 

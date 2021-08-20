@@ -40,6 +40,7 @@ import kotlin.math.PI
 class Scene(private val window: GameWindow) {
 
 
+    private var collisionDebug: Boolean = false
     private var cs: CascadedShadowMapper
     private val playerPositions = mutableListOf<Vector3f>()
     private val collisionHandler = CollisionHandler()
@@ -303,8 +304,8 @@ class Scene(private val window: GameWindow) {
         //===================================================================
 
         Camera = TronCamera(DegToRad(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f, Player);
-        Camera.rotateLocal(DegToRad(-25.0f), 0.0f, 0.0f);
-        Camera.translateLocal(Vector3f(0.0f, 1.5f, 7.0f));
+        Camera.rotateLocal(DegToRad(-20.0f), 0.0f, 0.0f);
+        Camera.translateLocal(Vector3f(0.0f, 0.0f, 7.0f));
 
         //===================================================================
 
@@ -637,10 +638,18 @@ class Scene(private val window: GameWindow) {
             actor.Render(mainShader)
         }
 
-        collisionDebugShader.use()
-        for(c in collisionBoxes) {
-            c.render(collisionDebugShader, Camera)
+
+        // Collision Debug
+        if(collisionDebug) {
+            collisionDebugShader.use()
+            for(c in collisionBoxes) {
+                c.render(collisionDebugShader, Camera)
+            }
         }
+
+
+
+
         // Skybox rendering
         skyboxShader.use();
 
@@ -1186,6 +1195,8 @@ class Scene(private val window: GameWindow) {
 
     fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {
 
+        if (key == GLFW.GLFW_KEY_C && action == GLFW.GLFW_PRESS) collisionDebug = !collisionDebug
+
         PlayerActor?.OnKey(key, scancode, action, mode)
         // Save Current Player Position
         /*if (key == GLFW.GLFW_KEY_G && action == GLFW.GLFW_PRESS) {
@@ -1257,6 +1268,7 @@ class Scene(private val window: GameWindow) {
     private fun loadLevel() {}
 
     private fun updateLoadingScreen(percentage: Float) {}
+
     fun getPlayer(): Player? {
         return PlayerActor as Player?
     }
