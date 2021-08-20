@@ -133,7 +133,7 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
             val v1 = vectors[indices[i + 1]]
             val v2 = vectors[indices[i + 2]]
 
-            println("$v0 : $v1 : $v2")
+            //println("$v0 : $v1 : $v2")
 
             val uv0 = texCoords[indices[i]]
             val uv1 = texCoords[indices[i + 1]]
@@ -154,7 +154,7 @@ class Terrain(var gridX : Int, var gridZ : Int, private var material : TerrainMa
             val tangent = ((deltaPos1.mul(deltaUV2.y, Vector3f())).sub(deltaPos2.mul(deltaUV1.y, Vector3f()), Vector3f())).mul(r);
             val bitangent = ((deltaPos2.mul(deltaUV1.x, Vector3f())).sub(deltaPos1.mul(deltaUV2.x, Vector3f()), Vector3f())).mul(r);
 
-            println("$i : $r : $deltaPos1 $deltaPos2")
+            //println("$i : $r : $deltaPos1 $deltaPos2")
             vertexData[vertexPointer * 14 + 8] = tangent.x()
             vertexData[vertexPointer * 14 + 9] = tangent.y()
             vertexData[vertexPointer * 14 + 10] = tangent.z()

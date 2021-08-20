@@ -16,7 +16,7 @@ open class Transformable(var modelMatrix: Matrix4f = Matrix4f(), var parent: Tra
      * @param yaw radiant angle around y-axis ccw
      * @param roll radiant angle around z-axis ccw
      */
-    fun rotateLocal(pitch: Float, yaw: Float, roll: Float) {
+    open fun rotateLocal(pitch: Float, yaw: Float, roll: Float) {
 
         this.pitch += pitch; this.yaw += yaw; this.roll += roll
         modelMatrix.rotateXYZ(pitch, yaw, roll);
@@ -29,7 +29,7 @@ open class Transformable(var modelMatrix: Matrix4f = Matrix4f(), var parent: Tra
      * @param roll radiant angle around z-axis ccw
      * @param altMidpoint rotation center
      */
-    fun rotateAroundPoint(pitch: Float, yaw: Float, roll: Float, altMidpoint: Vector3f) {
+    open fun rotateAroundPoint(pitch: Float, yaw: Float, roll: Float, altMidpoint: Vector3f) {
         /*val rotMatX = Matrix4f(
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, cos(pitch), sin(pitch), 0.0f,

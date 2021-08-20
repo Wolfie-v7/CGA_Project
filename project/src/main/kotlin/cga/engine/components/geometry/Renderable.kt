@@ -44,6 +44,7 @@ class Renderable(var MeshList : MutableList<Mesh>, var _modelMatrix : Matrix4f =
     }
 
     fun playAnimation(index: Int, playbackSpeed: Float = 1f, loop: Boolean = false) {
+        if (index !in animations.indices) return
         currentAnimation = index
         for (m in MeshList) m.playAnimation(animations[index] ?: null, playbackSpeed, loop)
     }
@@ -68,5 +69,9 @@ class Renderable(var MeshList : MutableList<Mesh>, var _modelMatrix : Matrix4f =
 
     fun setDrawLine(line: Boolean) {
         for (mesh in MeshList) mesh.bDrawLines = line
+    }
+
+    fun setMaterial(material: Material) {
+        for (mesh in MeshList) mesh.material = material
     }
 }

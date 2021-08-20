@@ -12,6 +12,7 @@ open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1,
 
     open var bIsVisible = true;
     open var bIsStatic = false;
+    open var moving: Boolean = false;
 
     open fun BeginPlay() {};
     open fun Tick(dt : Float) {};
@@ -29,7 +30,10 @@ open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1,
             Mesh?.destroy()
     }
     open fun Render(shaderProgram: ShaderProgram) { if(bIsVisible) Mesh?.render(shaderProgram) }
-    open fun Update(dt : Float, t : Float) { Mesh?.update(dt) }
+    open fun Update(dt : Float, t : Float) {
+        Mesh?.update(dt)
+
+    }
     open fun setSceneRoot(newRoot : Transformable) { SceneRoot = newRoot }
     open fun getSceneRoot() = SceneRoot;
     fun getModelMatrix(): Matrix4f {
@@ -38,12 +42,13 @@ open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1,
     }
 
     open fun OnKey(key: Int, scancode: Int, action: Int, mode: Int) {}
-    open fun OnMouseButon(button: Int, action: Int, mode: Int) {}
+    open fun OnMouseButton(button: Int, action: Int, mode: Int) {}
     open fun OnMouseMove(xpos: Double, ypos: Double) {}
 
     fun getWorldPosition(): Vector3f {
         return SceneRoot.getWorldPosition()
     }
+
 
 
 }

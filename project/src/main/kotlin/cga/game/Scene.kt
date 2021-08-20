@@ -22,6 +22,7 @@ import cga.utility.Vector3Reader
 import cga.utility.Vector3Writer
 import cga.utility.*
 import org.joml.Math.cos
+import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
@@ -94,6 +95,7 @@ class Scene(private val window: GameWindow) {
     private var currentMousePos : GameWindow.MousePosition = window.mousePos;
 
 
+    private val lockList = mutableListOf<GameLock>()
 
     //scene setup
     init {
@@ -192,7 +194,7 @@ class Scene(private val window: GameWindow) {
         //tree?.let { println(it.MeshList.size); Renderables.add(it) }
         //tree?.translateLocal(Vector3f(-100f,0f,0f))
 
-        val treesPositions = PositionGenerator.generatePositions(100, Vector3f(-30f, 0f, -50f), Vector3f(50f, 0f, 10f), 10, 0, 10)
+        val treesPositions = PositionGenerator.generatePositions(100, Vector3f(-30f, 0f, -50f), Vector3f(50f, 0f, 10f), 10f, 0f, 10f)
         var treeInst = tree?.let { r ->
             treesPositions
                 ?.let { RenderableInstance(r, it,100, tree.getWorldModelMatrix()) }
@@ -202,9 +204,9 @@ class Scene(private val window: GameWindow) {
 
         val grassObj = ModelLoader.loadModel("project/assets/models/grass.obj", 0f, 0f, 0f);
         grassObj?.MeshList?.forEach { it.bHasTransparency = true; it.material?.diff?.setTexParams(GL30.GL_CLAMP_TO_EDGE, GL30.GL_CLAMP_TO_EDGE, GL30.GL_LINEAR_MIPMAP_LINEAR, GL30.GL_LINEAR_MIPMAP_LINEAR) }
-        val grassPositions = PositionGenerator.generatePositions(500, Vector3f(-30f, 0f, -50f), Vector3f(50f, 0f, 10f), 2, 0, 2, terrain)
+        val grassPositions = PositionGenerator.generatePositions(1000, Vector3f(-70f, 0f, -100f), Vector3f(70f, 0f, 50f), 2f, 0.05f, 2f, terrain)
         val grassInst = grassObj?.let { g ->
-            grassPositions?.let { RenderableInstance(g, it, 500, grassObj.getWorldModelMatrix())}
+            grassPositions?.let { RenderableInstance(g, it, 1000, grassObj.getWorldModelMatrix())}
 
         }
         grassInst?.let { Instances.add(it) }
@@ -212,27 +214,45 @@ class Scene(private val window: GameWindow) {
         val pos = Vector3Reader.read("project/assets/cache/PlayerPositions.txt")
         val tree1obj = ModelLoader.loadModel("project/assets/cache/tree1.obj", 0f, 0f, 0f)
         tree1obj?.MeshList?.forEach { it.bHasTransparency = true; it.material?.diff?.setTexParams(GL30.GL_CLAMP_TO_EDGE, GL30.GL_CLAMP_TO_EDGE, GL30.GL_LINEAR_MIPMAP_LINEAR, GL30.GL_LINEAR_MIPMAP_LINEAR) }
-        val tree1Positions = PositionGenerator.generatePositions(500, pos?.get(0) ?: Vector3f(), pos?.get(1) ?: Vector3f(), 5, 0, 5)
+        val tree1Positions = PositionGenerator.generatePositions(500, pos?.get(0) ?: Vector3f(), pos?.get(1) ?: Vector3f(), 5f, 0f, 5f)
         val tree1Inst = tree1obj?.let { t -> tree1Positions?.let { RenderableInstance(t, it, 500, tree1obj.getWorldModelMatrix()) }}
         tree1Inst?.let { Instances.add(it) }
 
-        /*var treeB = ModelLoader.loadModel("project/assets/models/Trees/TreeB.obj", 0f, 0f, 0f)
-        var treeBInst = treeB?.let { t -> RenderableInstance(
-            t,
-        ) }*/
-
-
-        //var newTree = ModelLoader.loadModel("./assets/models/pine/pine.obj", 0f, 0f, 0f)
-        //newTree?.let { Renderables.add(it) }
-
         //===================================================================
-        // Motorcycle
+        // Rocks
         //===================================================================
 
-        //Player = ModelLoader.loadModel("project/assets/Light Cycle/Light Cycle/HQ_Movie cycle.obj",
-        //        DegToRad(-90.0f), DegToRad(90.0f), 0.0f);
+        val rock1 = ModelLoader.loadModel("project/assets/models/static/Rock_9/Rock.obj", 0f, 0f, 0f)
+        val rock1Pos = PositionGenerator.generatePositions(7, Vector3f(-70f, -0.5f, -70f), Vector3f(20f, 0.5f, -20f),20f, 0f, 20f)
+        val rock1Inst = rock1?.let { t -> rock1Pos?.let { RenderableInstance(t, it, 7, rock1.getWorldModelMatrix()) } }
+        rock1Inst?.let { Instances.add(it) }
 
-        //Player = ModelLoader.loadModel("project/assets/models/OrangeBot_OBJ/OrangeBOT_Scaled.obj", 0f, DegToRad(180f), 0.0f);
+        val rock2 = ModelLoader.loadModel("project/assets/models/static/rock_4/rock.obj", 0f, 0f, 0f)
+        val rock2Pos = PositionGenerator.generatePositions(3, Vector3f(100f, 0f, -10f), Vector3f(200f, 0f, 30f),20f, 0f, 20f)
+        val rock2Mat = Material(
+            Texture2D("project/assets/models/static/rock_4/rock_low_Base_Color.png", true),
+            Texture2D("project/assets/models/static/rock_4/rock_low_Metallic.png", true),
+            Texture2D("project/assets/models/static/rock_4/rock_low_Metallic.png", true))
+        rock2Mat.normalMap = Texture2D("project/assets/models/static/rock_4/rock_low_Normal_DirectX.png", true)
+        rock2?.setMaterial(rock2Mat)
+        val rock2Inst = rock2?.let { t ->  rock2Pos?.let { RenderableInstance(t, it, 3, rock2.getWorldModelMatrix()) }}
+        rock2Inst?.let { Instances.add(it) }
+
+        val rock3 = ModelLoader.loadModel("project/assets/models/static/Rock/Rock_3.obj", 0f, 0f, 0f)
+        rock3?.scaleLocal(Vector3f(0.05f))
+        val rock3Pos = PositionGenerator.generatePositions(5, Vector3f(-3000f, 0f, -2500f), Vector3f(1000f, 0f, -2000f),50f, 0f, 20f)
+        val rock3Mat = Material(
+            Texture2D("project/assets/models/static/Rock/Rock_d.jpg", true),
+            Texture2D("project/assets/models/static/rock_4/rock_low_Metallic.png", true),
+            Texture2D("project/assets/models/static/Rock/Rock_s.jpg", true))
+        rock3Mat.normalMap = Texture2D("project/assets/models/static/Rock/Rock_n.jpg", true)
+        rock3?.setMaterial(rock3Mat)
+        val rock3Inst = rock3?.let { t ->  rock3Pos?.let { RenderableInstance(t, it, 5, rock3.getWorldModelMatrix()) }}
+        rock3Inst?.let { Instances.add(it) }
+
+        //===================================================================
+        // Player
+        //===================================================================
 
         Player = ModelLoader.loadModel("project/assets/models/OrangeBot_OBJ/mainBot.dae", 0f, 0f, 0f)
         //Player?.setDrawLine(true)
@@ -257,12 +277,34 @@ class Scene(private val window: GameWindow) {
         //===================================================================
 
         //===================================================================
+        // Puzzle 1
+        //===================================================================
+        val rabbitKey = ModelLoader.loadModel("project/assets/models/puzzle1/rabbit/RabbitKey.obj", 0f, 0f, 0f)
+        val rabbitKeyActor = rabbitKey?.let { //it.setMaterial(rabbitKeyMat);
+            it.translateLocal(Vector3f(18f, 0f, 5f));
+            GameKey(this, it, GameKey.KeyType.RABBIT) }
+        rabbitKey?.let { rabbitKeyActor?.setSceneRoot(it) }
+        rabbitKeyActor?.let { registerActor(it) }
+
+        val rabbitPlatform = ModelLoader.loadModel("project/assets/models/puzzle1/rabbit/RabbitPlatform.obj", 0f, 0f, 0f)
+        val rabbitPlatformActor = rabbitPlatform?.let {
+            it.MeshList[1].material?.normalMap = Texture2D("project/assets/models/puzzle1/rabbit/RabbitPlatform_normal.jpg", true)
+            it.translateLocal(Vector3f(8f, 0f, 5f));
+            GameLock(this, it, GameKey.KeyType.RABBIT)
+        }
+
+        rabbitPlatform?.let { rabbitPlatformActor?.setSceneRoot(it) }
+        rabbitPlatformActor?.let { registerActor(it); lockList.add(it) }
+
+
+
+        //===================================================================
         // Camera Initialization
         //===================================================================
 
         Camera = TronCamera(DegToRad(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f, Player);
-        Camera.rotateLocal(DegToRad(-0.0f), 0.0f, 0.0f);
-        Camera.translateLocal(Vector3f(0.0f, 1.0f, 5.0f));
+        Camera.rotateLocal(DegToRad(-25.0f), 0.0f, 0.0f);
+        Camera.translateLocal(Vector3f(0.0f, 1.5f, 7.0f));
 
         //===================================================================
 
@@ -953,6 +995,7 @@ class Scene(private val window: GameWindow) {
         while (spawnQueue.isNotEmpty()) ActorList.add(spawnQueue.poll())
         while (despawnQueue.isNotEmpty()) ActorList.remove(despawnQueue.poll())
 
+        Camera.update(dt, t, terrain)
         collisionHandler.update(dt, t)
         Renderables.forEach {it.update(dt)}
         ActorList.forEach {
@@ -1145,22 +1188,24 @@ class Scene(private val window: GameWindow) {
 
         PlayerActor?.OnKey(key, scancode, action, mode)
         // Save Current Player Position
-        if (key == GLFW.GLFW_KEY_G && action == GLFW.GLFW_PRESS) {
+        /*if (key == GLFW.GLFW_KEY_G && action == GLFW.GLFW_PRESS) {
             Vector3Writer.save(Player?.getWorldPosition() ?: Vector3f(-999f))
         }
 
-        if (key == GLFW.GLFW_KEY_F && action == GLFW.GLFW_PRESS) Vector3Writer.write("project/assets/cache/PlayerPositions.txt")
+        if (key == GLFW.GLFW_KEY_F && action == GLFW.GLFW_PRESS) Vector3Writer.write("project/assets/cache/PlayerPositions.txt")*/
         //if (key == GLFW.GLFW_KEY_R && action == GLFW.GLFW_PRESS) cs.calculateBoundingBox(Camera.getCalculateProjectionMatrix().mul(Camera.getCalculateViewMatrix()))
     }
 
     fun onMouseButton(button: Int, action: Int, mode: Int) {
-        for (actor in ActorList) actor.OnMouseButon(button, action, mode)
+        for (actor in ActorList) actor.OnMouseButton(button, action, mode)
         if(button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) { orbitMode = action == GLFW.GLFW_PRESS; }
     }
 
     fun onMouseMove(xpos: Double, ypos: Double) {
-        if(orbitMode) Camera.rotateAroundPoint(0.0f, DegToRad((currentMousePos.xpos - xpos).toFloat() * 0.07f), 0.0f, Vector3f(0.0f));
-        //if(orbitMode) Camera.rotateAroundPoint(DegToRad((currentMousePos.ypos - ypos).toFloat() * 0.07f), 0.0f, 0.0f, Vector3f(0.0f));
+        //if(orbitMode)
+            Camera.rotateAroundPoint(0.0f, DegToRad((currentMousePos.xpos - xpos).toFloat() * 0.07f), 0.0f, Vector3f(0.0f));
+        //if(orbitMode)
+            Camera.rotateLocal(DegToRad((currentMousePos.ypos - ypos).toFloat() * 0.07f), 0.0f, 0.0f);
     }
 
     fun cleanup() {
@@ -1207,6 +1252,17 @@ class Scene(private val window: GameWindow) {
         }
         spawnQueue.add(actorInst)
         return actorInst
+    }
+
+    private fun loadLevel() {}
+
+    private fun updateLoadingScreen(percentage: Float) {}
+    fun getPlayer(): Player? {
+        return PlayerActor as Player?
+    }
+
+    fun getLock(type: GameKey.KeyType): GameLock? {
+        return lockList.find { it.type == type }
     }
 
 }

@@ -9,13 +9,13 @@ class Game(width: Int,
            height: Int,
            fullscreen: Boolean = false,
            vsync: Boolean = false,
-           title: String = "Testgame",
+           title: String = "The Path v0.0.5",
            GLVersionMajor: Int = 3,
            GLVersionMinor: Int = 3) : GameWindow(width, height, fullscreen, vsync, GLVersionMajor, GLVersionMinor, title, 8, 120.0f) {
 
     private val scene: Scene
     init {
-        setCursorVisible(true)
+        setCursorVisible(false)
         scene = Scene(this)
     }
 

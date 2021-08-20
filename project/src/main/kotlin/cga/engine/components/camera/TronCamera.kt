@@ -2,8 +2,13 @@ package cga.engine.components.camera
 
 import cga.engine.components.geometry.Transformable
 import cga.engine.components.shader.ShaderProgram
+import cga.engine.components.terrain.Terrain
 import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.joml.Vector4f
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f, var ZNear : Float = 0.1f, var ZFar : Float = 100.0f, var _parent : Transformable? = null)
     : ICamera, Transformable(Matrix4f(), _parent) {
@@ -18,6 +23,8 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
             0.0f, 0.0f, 0.0f, 1.0f
     );
 
+    val MAX_PITCH = 0.99f
+    val MIN_PITCH = -0.99f
 
     override fun getCalculateViewMatrix(): Matrix4f {
 
@@ -54,6 +61,22 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
         shader.setUniform("projection_matrix", projMat, false);
         shader.setUniform("view_matrix", viewMat, false);
         //shader.setUniform("norm_matrix", invViewMat, true);
+    }
+
+    fun update(dt: Float, t: Float, terrain: Terrain) {
+        val pos = getWorldPosition()
+        val terrainHeight = terrain.getHeightAtPosition(pos.x(), pos.z())
+        //if (pos.y() < terrainHeight) translateGlobal(Vector3f(0f, terrainHeight - pos.y(), 0f))
+    }
+
+    override fun rotateLocal(pitch: Float, yaw: Float, roll: Float) {
+        val dot = getZAxis().dot(Vector3f(0f, 1f, 0f))
+
+        if (dot in MIN_PITCH .. MAX_PITCH) super.rotateLocal(pitch, yaw, roll)
+        else {
+            val mat = Matrix4f(modelMatrix).rotateXYZ(pitch, yaw, roll)
+            if (mat.getColumn(2, Vector3f()).dot(Vector3f(0f, 1f, 0f)) in min(dot, -dot) .. max(dot, -dot)) super.rotateLocal(pitch, yaw, roll)
+        }
     }
 
 }

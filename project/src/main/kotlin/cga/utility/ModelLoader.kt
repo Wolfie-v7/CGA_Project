@@ -35,7 +35,7 @@ object ModelLoader {
             // Fix for Collada Root Matrix
 
             val root = aiScene.mRootNode()?.mTransformation()
-            rootMatrix = root?.let { println("did the ass"); toMatrix4f(it) } ?: Matrix4f()
+            rootMatrix = root?.let { toMatrix4f(it) } ?: Matrix4f()
             val xRow = Vector4f(root?.a1() ?: 0f, root?.a2() ?: 0f, root?.a3() ?: 0f, root?.a4() ?: 0f)
             val yRow = Vector4f(root?.b1() ?: 0f, root?.b2() ?: 0f, root?.b3() ?: 0f, root?.b4() ?: 0f)
             val zRow= Vector4f(root?.c1() ?: 0f, root?.c2() ?: 0f, root?.c3() ?: 0f, root?.c4() ?: 0f)
@@ -177,7 +177,7 @@ object ModelLoader {
             val rootTransform = aiScene.mRootNode()?.mTransformation()?.let { toMatrix4f(it) }
             if ( rootTransform != null) {
                 val name = aiScene.mRootNode()?.mName()?.dataString()
-                println("$name\n$rootTransform")
+                //println("$name\n$rootTransform")
             }
             else {
                 println("root is null")
@@ -202,7 +202,7 @@ object ModelLoader {
 
             }
 
-            rootBone?.print()
+            //rootBone?.print()
 
             for (mesh in rm.meshes) {
                 mesh.rootBone = rootBone
@@ -222,7 +222,7 @@ object ModelLoader {
                     val timestamps = mutableListOf<Float>()
                     var maxKeyframes = 0
 
-                    println("animation")
+                    //println("animation")
                     val poseList = mutableListOf<Map<String, BoneTransform>>()
 
 
@@ -430,7 +430,7 @@ object ModelLoader {
         // preprocessing rotation
         val rot = Matrix3f().rotateZ(roll).rotateY(yaw).rotateX(pitch)
         // create textures
-//default textures
+        //default textures
         val ddata = BufferUtils.createByteBuffer(4)
         ddata.put(0.toByte()).put(0.toByte()).put(0.toByte()).put(0.toByte())
         ddata.flip()
@@ -534,7 +534,7 @@ object ModelLoader {
         //println(parentTransform)
         val localTransform = toMatrix4f(node.mTransformation())
         val globalTransform =  parentTransform.mul(localTransform)
-        println("$nodeName\n$globalTransform")
+        //println("$nodeName\n$globalTransform")
 
         var bone : Bone? = null
         var boneCount = 0

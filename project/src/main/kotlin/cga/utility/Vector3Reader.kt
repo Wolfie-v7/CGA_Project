@@ -18,7 +18,7 @@ object Vector3Reader {
         var c = 0
         while(scanner.hasNextLine()) {
             if (scanner.hasNext("v")) {
-                val s = scanner.next(); println(s)
+                val s = scanner.next();
                 positions.add(parsePosition(scanner))
             }
             else scanner.nextLine()
