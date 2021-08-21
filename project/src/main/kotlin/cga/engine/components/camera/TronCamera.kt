@@ -3,10 +3,10 @@ package cga.engine.components.camera
 import cga.engine.components.geometry.Transformable
 import cga.engine.components.shader.ShaderProgram
 import cga.engine.components.terrain.Terrain
+import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -25,6 +25,11 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
 
     val MAX_PITCH = 0.99f
     val MIN_PITCH = -0.99f
+
+    private val originalFOV = Fov
+    private var zooming: Boolean = false
+    private var mt = 0f
+    private val zoomFOV = Fov * 0.7f
 
     override fun getCalculateViewMatrix(): Matrix4f {
 
@@ -64,19 +69,62 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
     }
 
     fun update(dt: Float, t: Float, terrain: Terrain) {
-        val pos = getWorldPosition()
-        val terrainHeight = terrain.getHeightAtPosition(pos.x(), pos.z())
-        //if (pos.y() < terrainHeight) translateGlobal(Vector3f(0f, terrainHeight - pos.y(), 0f))
+        updateTerrainCollision(terrain.getHeightAtPosition(getWorldPosition().x(), getWorldPosition().z()))
+        updateZoom(zooming, dt)
     }
 
+    /**
+     * rotate the camera locally within X-Axis limits
+     */
     override fun rotateLocal(pitch: Float, yaw: Float, roll: Float) {
         val dot = getZAxis().dot(Vector3f(0f, 1f, 0f))
 
+        // Check if the rotation is still in Range MIN_PITCH-MAX_PITCH
         if (dot in MIN_PITCH .. MAX_PITCH) super.rotateLocal(pitch, yaw, roll)
         else {
+
+            // On Range limit, check if we are rotating back into range
             val mat = Matrix4f(modelMatrix).rotateXYZ(pitch, yaw, roll)
             if (mat.getColumn(2, Vector3f()).dot(Vector3f(0f, 1f, 0f)) in min(dot, -dot) .. max(dot, -dot)) super.rotateLocal(pitch, yaw, roll)
         }
     }
+
+    /**
+     * Same with rotateLocal() but around a point that is different from teh camera's position
+     */
+    override fun rotateAroundPoint(pitch: Float, yaw: Float, roll: Float, altMidpoint: Vector3f) {
+        val dot = getZAxis().dot(Vector3f(0f, 1f, 0f))
+        if (dot in MIN_PITCH .. MAX_PITCH) super.rotateAroundPoint(pitch, yaw, roll, altMidpoint)
+        else {
+            val mat = Matrix4f(modelMatrix).rotateXYZ(pitch, yaw, roll)
+            if (mat.getColumn(2, Vector3f()).dot(Vector3f(0f, 1f, 0f)) in min(dot, -dot) .. max(dot, -dot)) super.rotateAroundPoint(pitch, yaw, roll, altMidpoint)
+        }
+    }
+
+    fun zoomIN(hold: Boolean) {
+        zooming = hold
+    }
+
+    private fun updateZoom(zoom: Boolean, dt: Float) {
+        if (zooming) {
+            if (mt < 1f) {
+                mt += dt * 2
+                mt = mt.coerceIn(0f, 1f)
+                Fov = Math.fma(zoomFOV - originalFOV, mt, originalFOV)
+            }
+        }
+        else {
+            if (mt > 0f) {
+                mt -= dt * 2
+                mt = mt.coerceIn(0f, 1f)
+                Fov = Math.fma(zoomFOV - originalFOV, mt, originalFOV)
+            }
+        }
+    }
+
+    private fun updateTerrainCollision(terrainHeight: Float) {
+
+    }
+
 
 }

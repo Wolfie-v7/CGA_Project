@@ -5,5 +5,5 @@ import cga.engine.components.shader.ShaderProgram
 interface IRenderable {
     fun render(shaderProgram: ShaderProgram)
     fun destroy()
-    fun update(dt: Float)
+    fun update(dt: Float, t: Float)
 }

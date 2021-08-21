@@ -207,7 +207,7 @@ class Scene(private val window: GameWindow) {
         grassObj?.MeshList?.forEach { it.bHasTransparency = true; it.material?.diff?.setTexParams(GL30.GL_CLAMP_TO_EDGE, GL30.GL_CLAMP_TO_EDGE, GL30.GL_LINEAR_MIPMAP_LINEAR, GL30.GL_LINEAR_MIPMAP_LINEAR) }
         val grassPositions = PositionGenerator.generatePositions(1000, Vector3f(-70f, 0f, -100f), Vector3f(70f, 0f, 50f), 2f, 0.05f, 2f, terrain)
         val grassInst = grassObj?.let { g ->
-            grassPositions?.let { RenderableInstance(g, it, 1000, grassObj.getWorldModelMatrix())}
+            grassPositions?.let { RenderableInstance(g, it, 1000, grassObj.getWorldModelMatrix(), null, true)}
 
         }
         grassInst?.let { Instances.add(it) }
@@ -281,7 +281,7 @@ class Scene(private val window: GameWindow) {
         // Puzzle 1
         //===================================================================
         val rabbitKey = ModelLoader.loadModel("project/assets/models/puzzle1/rabbit/RabbitKey.obj", 0f, 0f, 0f)
-        val rabbitKeyActor = rabbitKey?.let { //it.setMaterial(rabbitKeyMat);
+        val rabbitKeyActor = rabbitKey?.let {
             it.translateLocal(Vector3f(18f, 0f, 5f));
             GameKey(this, it, GameKey.KeyType.RABBIT) }
         rabbitKey?.let { rabbitKeyActor?.setSceneRoot(it) }
@@ -297,15 +297,52 @@ class Scene(private val window: GameWindow) {
         rabbitPlatform?.let { rabbitPlatformActor?.setSceneRoot(it) }
         rabbitPlatformActor?.let { registerActor(it); lockList.add(it) }
 
+        val bearKey = ModelLoader.loadModel("project/assets/models/puzzle1/bear/BearKey.obj", 0f, 0f, 0f)
+        val bearKeyActor = bearKey?.let {
+            it.translateLocal(Vector3f(35f, 0f, 15f));
+            GameKey(this, it, GameKey.KeyType.BEAR) }
+        bearKey?.let { bearKeyActor?.setSceneRoot(it) }
+        bearKeyActor?.let { registerActor(it) }
+
+        val bearPlatform = ModelLoader.loadModel("project/assets/models/puzzle1/bear/BearPlatform.obj", 0f, 0f, 0f)
+        val bearPlatformActor = bearPlatform?.let {
+            it.MeshList[1].material?.normalMap = Texture2D("project/assets/models/puzzle1/bear/Platform_normal.jpg", true)
+            it.translateLocal(Vector3f(25f, 0f, -8f));
+            GameLock(this, it, GameKey.KeyType.BEAR)
+        }
+
+        bearPlatform?.let { bearPlatformActor?.setSceneRoot(it) }
+        bearPlatformActor?.let { registerActor(it); lockList.add(it) }
+
+        val wolfKey = ModelLoader.loadModel("project/assets/models/puzzle1/wolf/WolfKey.obj", 0f, 0f, 0f)
+        val wolfKeyActor = wolfKey?.let {
+            it.translateLocal(Vector3f(-5f, 0f, -20f));
+            GameKey(this, it, GameKey.KeyType.WOLF) }
+        wolfKey?.let { wolfKeyActor?.setSceneRoot(it) }
+        wolfKeyActor?.let { registerActor(it) }
+
+        val wolfPlatform = ModelLoader.loadModel("project/assets/models/puzzle1/wolf/WolfPlatform.obj", 0f, 0f, 0f)
+        val wolfPlatformActor = wolfPlatform?.let {
+            //it.MeshList[1].material?.normalMap = Texture2D("project/assets/models/puzzle1/wolf/Platform_normal.jpg", true)
+            it.translateLocal(Vector3f(-10f, 0f, 7f));
+            GameLock(this, it, GameKey.KeyType.WOLF)
+        }
+
+        wolfPlatform?.let { wolfPlatformActor?.setSceneRoot(it) }
+        wolfPlatformActor?.let { registerActor(it); lockList.add(it) }
+
 
 
         //===================================================================
         // Camera Initialization
         //===================================================================
 
-        Camera = TronCamera(DegToRad(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f, Player);
+        CameraArm = Transformable(Matrix4f(), Player)
+        Camera = TronCamera(DegToRad(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f, CameraArm);
         Camera.rotateLocal(DegToRad(-20.0f), 0.0f, 0.0f);
         Camera.translateLocal(Vector3f(0.0f, 0.0f, 7.0f));
+        Camera.rotateLocal(DegToRad(5.0f), 0.0f, 0.0f);
+
 
         //===================================================================
 
@@ -662,8 +699,8 @@ class Scene(private val window: GameWindow) {
         glEnable(GL_CLIP_DISTANCE0)
         lake.bindReflecBuffer();
         val dis = 2 * (Camera.getWorldPosition().y() - lake.getHeight())
-        Camera.translateLocal(Vector3f(0f, -dis, 0f))
-        Camera.invertPitch()
+        Camera.modelMatrix.translate(Vector3f(0f, -dis, 0f))
+        Camera.invertPitch(1.0)
 
         /**
          * Terrain Rendering
@@ -796,8 +833,8 @@ class Scene(private val window: GameWindow) {
         SkyBox?.render(skyboxShader);
         glDepthFunc(GL_LESS);
 
-        Camera.invertPitch()
-        Camera.translateLocal(Vector3f(0f, dis, 0f))
+        Camera.invertPitch(-1.0)
+        Camera.modelMatrix.translate(Vector3f(0f, dis, 0f))
 
         lake.unbindReflecBuffer(window.windowWidth, window.windowHeight)
 
@@ -1006,11 +1043,12 @@ class Scene(private val window: GameWindow) {
 
         Camera.update(dt, t, terrain)
         collisionHandler.update(dt, t)
-        Renderables.forEach {it.update(dt)}
+        Renderables.forEach {it.update(dt, t)}
         ActorList.forEach {
             if (it is Player) it.Update(dt, t)
             else it.Update(dt, t)
         }
+        Instances.forEach { it.update(dt, t) }
 
         /*if (accelerate) Player?.playAnimation(0, 4f)
         else if(window.getKeyState(GLFW.GLFW_KEY_X)) Player?.playAnimation(1)
@@ -1209,14 +1247,17 @@ class Scene(private val window: GameWindow) {
 
     fun onMouseButton(button: Int, action: Int, mode: Int) {
         for (actor in ActorList) actor.OnMouseButton(button, action, mode)
-        if(button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) { orbitMode = action == GLFW.GLFW_PRESS; }
+        if(button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) { Camera.zoomIN(action == GLFW.GLFW_PRESS) ; }
     }
 
     fun onMouseMove(xpos: Double, ypos: Double) {
         //if(orbitMode)
-            Camera.rotateAroundPoint(0.0f, DegToRad((currentMousePos.xpos - xpos).toFloat() * 0.07f), 0.0f, Vector3f(0.0f));
+            //Camera.rotateAroundPoint(0.0f, DegToRad((currentMousePos.xpos - xpos).toFloat() * 0.03f), 0.0f, Vector3f(0.0f));
+        CameraArm.rotateLocal(0f, DegToRad((currentMousePos.xpos - xpos).toFloat() * 0.03f), 0.0f)
         //if(orbitMode)
-            Camera.rotateLocal(DegToRad((currentMousePos.ypos - ypos).toFloat() * 0.07f), 0.0f, 0.0f);
+            Camera.rotateAroundPoint(DegToRad((currentMousePos.ypos - ypos).toFloat() * 0.03f), 0.0f, 0.0f, Vector3f(0.0f));
+        //Camera.rotate(DegToRad((currentMousePos.ypos - ypos).toFloat() * 0.03f), 0.0f, 0.0f)
+
     }
 
     fun cleanup() {

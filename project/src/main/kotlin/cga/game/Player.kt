@@ -70,8 +70,8 @@ class Player(var _world: Scene, var _mesh: Renderable) : Actor(_world, _mesh) {
             else if (_world.getKeyState(GLFW_KEY_S)) moveForward(2f, -1)
             else Vector3f()
 
-        if (_world.getKeyState(GLFW_KEY_D)) _mesh.rotateLocal(0f, Math.toRadians(dt * -50.0).toFloat(), 0f)
-        else if (_world.getKeyState(GLFW_KEY_A)) _mesh.rotateLocal(0f, Math.toRadians(dt * 50.0).toFloat(), 0f)
+        if (_world.getKeyState(GLFW_KEY_D)) _mesh.rotateLocal(0f, Math.toRadians(dt * -70.0).toFloat(), 0f)
+        else if (_world.getKeyState(GLFW_KEY_A)) _mesh.rotateLocal(0f, Math.toRadians(dt * 70.0).toFloat(), 0f)
 
         running = currentVelocity.z() > 0f
         _mesh.translateLocal(currentVelocity.mul(-dt))
@@ -99,5 +99,7 @@ class Player(var _world: Scene, var _mesh: Renderable) : Actor(_world, _mesh) {
     fun setItem(item: IGameItem?) {
         this.item = item
     }
+
+    fun getItem() = item
 
 }

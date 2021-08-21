@@ -5,7 +5,7 @@ import cga.engine.components.shader.ShaderProgram
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
-open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1, val bIsInstanced: Boolean = false) {
+open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1, val bIsInstanced: Boolean = false, var CameraArm: Transformable? = null) {
     private var SceneRoot : Transformable = Transformable();
     open var collisionMesh : Mesh? = null;
     //var WorldPosition = SceneRoot.getWorldPosition();
@@ -31,7 +31,7 @@ open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1,
     }
     open fun Render(shaderProgram: ShaderProgram) { if(bIsVisible) Mesh?.render(shaderProgram) }
     open fun Update(dt : Float, t : Float) {
-        Mesh?.update(dt)
+        Mesh?.update(dt, t)
 
     }
     open fun setSceneRoot(newRoot : Transformable) { SceneRoot = newRoot }
@@ -48,7 +48,6 @@ open class Actor(var world : Scene, var Mesh : IRenderable?, var count: Int = 1,
     fun getWorldPosition(): Vector3f {
         return SceneRoot.getWorldPosition()
     }
-
 
 
 }

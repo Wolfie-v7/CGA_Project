@@ -39,7 +39,7 @@ class Renderable(var MeshList : MutableList<Mesh>, var _modelMatrix : Matrix4f =
         };
     }
 
-    override fun update(dt : Float) {
+    override fun update(dt : Float, t: Float) {
         for (mesh in MeshList) mesh.update(dt)
     }
 

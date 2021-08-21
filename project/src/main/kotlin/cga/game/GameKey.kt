@@ -26,7 +26,10 @@ class GameKey(private val _world: Scene, val _mesh: Renderable, var type: KeyTyp
         if (checkPlayerInRange(player)) {
             player?.setItem(this)
         }
-        else player?.setItem(null)
+        else {
+            if (player?.getItem()?.equals(this) == true) player.setItem(null)
+        }
+
         val lock = _world.getLock(this.type)
         if (checkLock(lock)) {
             //println("unlocked")

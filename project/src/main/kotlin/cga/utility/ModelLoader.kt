@@ -552,7 +552,6 @@ object ModelLoader {
                     if (boneChild != null) {
                         bone?.addChild(boneChild)
                     }
-
                 }
             }
         }

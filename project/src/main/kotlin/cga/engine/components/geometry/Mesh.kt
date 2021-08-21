@@ -69,7 +69,7 @@ class Mesh(private val vertexdata: FloatArray,
 
 
         // todo: upload your mesh data
-        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vertexdata, GL30.GL_STATIC_DRAW)
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vertexdata, GL30.GL_DYNAMIC_DRAW)
 
         for (i in attributes.indices)
         {
@@ -78,7 +78,7 @@ class Mesh(private val vertexdata: FloatArray,
         }
 
 
-        GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, indexdata, GL30.GL_STATIC_DRAW)
+        GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, indexdata, GL30.GL_DYNAMIC_DRAW)
 
 
         GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0)

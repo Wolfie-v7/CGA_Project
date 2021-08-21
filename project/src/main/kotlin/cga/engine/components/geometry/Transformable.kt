@@ -3,6 +3,7 @@ package cga.engine.components.geometry
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
+import kotlin.math.acos
 
 
 open class Transformable(var modelMatrix: Matrix4f = Matrix4f(), var parent: Transformable? = null) {
@@ -107,6 +108,41 @@ open class Transformable(var modelMatrix: Matrix4f = Matrix4f(), var parent: Tra
         pos.mul(-1.0f);
         this.translateGlobal(pos);
 
+    }
+
+    fun scaleLocal(x: Float, y: Float, z: Float) {
+        scaleLocal(Vector3f(x, y, z))
+    }
+
+    /**
+     * Shear (skew) transformation
+     * @param shear shear value along X, Y and Z axe
+     */
+    fun shear(shear: Vector3f) {
+        val shearX = Matrix4f(
+            1.0f, shear.y  , shear.z  , 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+        val shearY = Matrix4f(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            shear.x  , 1.0f, shear.z  , 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+        val shearZ = Matrix4f(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            shear.x  , shear.y  , 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+
+        );
+
+        val shearMatrix = shearX.mul(shearY).mul(shearZ)
+
+        val pos = getPosition(); //println(pos)
+        translateGlobal(pos.negate())
+        shearMatrix.mul(modelMatrix, modelMatrix)
+        translateGlobal(pos.negate())
     }
 
     /**
@@ -243,14 +279,25 @@ open class Transformable(var modelMatrix: Matrix4f = Matrix4f(), var parent: Tra
     }
 
     fun attachParent(newParent : Transformable?) { this.parent = newParent; }
-    fun invertPitch() {
+    fun invertPitch(m: Double) {
 
-        modelMatrix.m10(modelMatrix.m10() * -1)
-        modelMatrix.m01(modelMatrix.m01() * -1)
-        modelMatrix.m00(modelMatrix.m00())
+        //modelMatrix.m00(modelMatrix.m00() * -1)
+        //modelMatrix.m10(modelMatrix.m10() * -1)
+        //modelMatrix.m20(modelMatrix.m20() * -1)
+
+        //modelMatrix.m01(modelMatrix.m01() * -1)
+        //modelMatrix.m11(modelMatrix.m11() * -1)
+        modelMatrix.m21(modelMatrix.m21() * -1)
+        //modelMatrix.m30(modelMatrix.m30() * -1)
+        //modelMatrix.m32(modelMatrix.m32() * -1)
 
         modelMatrix.m12(modelMatrix.m12() * -1)
-        modelMatrix.m21(modelMatrix.m21() * -1)
+        //modelMatrix.m03(modelMatrix.m03() * -1)
+        //modelMatrix.m23(modelMatrix.m23() * -1)
+
+        //modelMatrix.m02(modelMatrix.m02() * -1)
+        //modelMatrix.m12(modelMatrix.m12() * -1)
+        //modelMatrix.m22(modelMatrix.m22() * -1)
 
     }
 
