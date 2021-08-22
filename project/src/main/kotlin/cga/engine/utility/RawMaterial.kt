@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 data class RawMaterial(var diffTexIndex: Int = 0,
                        var specTexIndex: Int = 0,

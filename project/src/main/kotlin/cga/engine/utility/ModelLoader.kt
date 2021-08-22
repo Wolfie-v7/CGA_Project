@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 import cga.engine.components.animation.*
 import cga.engine.components.geometry.Material

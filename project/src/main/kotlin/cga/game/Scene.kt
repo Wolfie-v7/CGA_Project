@@ -20,8 +20,8 @@ import cga.engine.components.terrain.Terrain
 import cga.engine.components.terrain.TerrainMaterial
 import cga.engine.components.water.WaterSurface
 import cga.engine.components.texture.Texture2D
-import cga.utility.Vector3Reader
-import cga.utility.*
+import cga.engine.utility.Vector3Reader
+import cga.engine.utility.*
 import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector3f

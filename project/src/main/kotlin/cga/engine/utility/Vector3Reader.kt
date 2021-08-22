@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 import org.joml.Vector3f
 import java.io.BufferedInputStream

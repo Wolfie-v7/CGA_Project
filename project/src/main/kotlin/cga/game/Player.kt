@@ -1,8 +1,6 @@
 package cga.game
 
 import cga.engine.components.geometry.Renderable
-import cga.engine.components.geometry.Transformable
-import cga.utility.ModelLoader
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW.*
 

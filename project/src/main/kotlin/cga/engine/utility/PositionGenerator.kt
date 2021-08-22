@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 import cga.engine.components.terrain.Terrain
 import org.joml.Vector3f

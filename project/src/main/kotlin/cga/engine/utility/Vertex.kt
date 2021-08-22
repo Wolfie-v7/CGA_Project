@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 import org.joml.Vector2f
 import org.joml.Vector3f

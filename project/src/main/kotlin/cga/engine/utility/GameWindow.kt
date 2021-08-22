@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.*

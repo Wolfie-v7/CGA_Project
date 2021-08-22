@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 data class RawModel(
         var meshes: MutableList<RawMesh> = mutableListOf(),

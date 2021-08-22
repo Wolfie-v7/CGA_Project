@@ -1,4 +1,4 @@
-package cga.utility
+package cga.engine.utility
 
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30

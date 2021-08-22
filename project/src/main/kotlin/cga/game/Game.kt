@@ -1,6 +1,6 @@
 package cga.game
 
-import cga.utility.GameWindow
+import cga.engine.utility.GameWindow
 
 /*
   Created by Fabian on 16.09.2017.
