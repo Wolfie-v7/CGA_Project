@@ -34,4 +34,4 @@ Versuche, alle 3 Würfel zu finden und auf ihre jeweiligen Plattformen zu stelle
 ### Ressourcen
 - <a href="https://www.cgtrader.com/free-3d-models/character/sci-fi/orange-robot-from-love-death-and-robots">Roboter</a>
 - <a href="https://3dtextures.me">Texturen</a><br/>
-Alle anderen Modelle wurden selbst hergestellt. Dafür wurden Free-Stock Bilder verwendet
+Alle anderen Modelle wurden von mir hergestellt. Dafür wurden Free-Stock Bilder verwendet
