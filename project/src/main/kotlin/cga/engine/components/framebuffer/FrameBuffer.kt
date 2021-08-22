@@ -139,4 +139,5 @@ open class FrameBuffer(private val width : Int, private val height : Int, privat
 
     fun getTexture0() = colorBuffer0
     fun getTexture1() = colorBuffer1
+    fun getId() = fbo
 }

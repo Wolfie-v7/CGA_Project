@@ -3,6 +3,7 @@ package cga.game
 import cga.engine.components.camera.TronCamera
 import cga.engine.components.framebuffer.DepthDebug
 import cga.engine.components.framebuffer.FrameBuffer
+import cga.engine.components.framebuffer.MultSampFrameBuffer
 import cga.engine.components.framebuffer.PingPongBuffer
 import cga.engine.components.geometry.*
 import cga.engine.components.light.DirectionalLight
@@ -40,6 +41,7 @@ import kotlin.math.PI
 class Scene(private val window: GameWindow) {
 
 
+    private var MultiSampled: MultSampFrameBuffer
     private var collisionDebug: Boolean = false
     private var cs: CascadedShadowMapper
     private val playerPositions = mutableListOf<Vector3f>()
@@ -409,6 +411,8 @@ class Scene(private val window: GameWindow) {
         PostProcess = FrameBuffer(window.windowWidth, window.windowHeight);
         postProcessShader.setUniform("ScreenTexture", 0);
 
+        MultiSampled = MultSampFrameBuffer(window.windowWidth, window.windowHeight)
+
         //===================================================================
 
         //===================================================================
@@ -531,7 +535,8 @@ class Scene(private val window: GameWindow) {
         var view_norm_matrix = Camera.getCalculateViewMatrix();
 
         // Second Pass: Render Scene to Post Process FBO
-        PostProcess.bind(window.windowWidth, window.windowHeight);
+        //PostProcess.bind(window.windowWidth, window.windowHeight);
+        MultiSampled.bind(window.windowWidth, window.windowHeight)
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.5f, 0.6f, 0.7f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
@@ -981,7 +986,8 @@ class Scene(private val window: GameWindow) {
 
 
         // Render water
-        PostProcess.bind(window.windowWidth, window.windowHeight)
+        //PostProcess.bind(window.windowWidth, window.windowHeight)
+        MultiSampled.bind(window.windowWidth, window.windowHeight)
         glDisable(GL_CLIP_DISTANCE0)
         waterShader.use()
         Camera.bind(waterShader)
@@ -993,7 +999,9 @@ class Scene(private val window: GameWindow) {
 
 
         // Final Pass: Render to Screen
-        PostProcess.unbind(window.windowWidth, window.windowHeight);
+        //PostProcess.unbind(window.windowWidth, window.windowHeight);
+        MultiSampled.blit(PostProcess)
+        MultiSampled.unbind(window.windowWidth, window.windowHeight)
 
 
         glDisable(GL_DEPTH_TEST);
