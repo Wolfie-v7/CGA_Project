@@ -29,3 +29,9 @@ Versuche, alle 3 Würfel zu finden und auf ihre jeweiligen Plattformen zu stelle
 - Instanziierung
 - Skeletal Animation
 - Kollisionserkennung (Separating Axis Theorem, Terrain-Kollision)
+
+
+### Ressourcen
+- <a href="https://www.cgtrader.com/free-3d-models/character/sci-fi/orange-robot-from-love-death-and-robots">Roboter</a>
+- <a href="https://3dtextures.me">Texturen</a>
+Alle anderen Modelle wurden selbst hergestellt. Dafür wurden Free-Stock Bilder verwendet
