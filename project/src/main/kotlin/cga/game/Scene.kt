@@ -1,5 +1,6 @@
 package cga.game
 
+import cga.engine.components.geometry.CollisionHandler
 import cga.engine.components.camera.TronCamera
 import cga.engine.components.framebuffer.DepthDebug
 import cga.engine.components.framebuffer.FrameBuffer
@@ -20,9 +21,7 @@ import cga.engine.components.terrain.TerrainMaterial
 import cga.engine.components.water.WaterSurface
 import cga.engine.components.texture.Texture2D
 import cga.utility.Vector3Reader
-import cga.utility.Vector3Writer
 import cga.utility.*
-import org.joml.Math.cos
 import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector3f
@@ -41,6 +40,8 @@ import kotlin.math.PI
 class Scene(private val window: GameWindow) {
 
 
+    private var glowballRef: RenderableInstance?
+    private val glowballs = mutableListOf<Transformable>()
     private var MultiSampled: MultSampFrameBuffer
     private var collisionDebug: Boolean = false
     private var cs: CascadedShadowMapper
@@ -79,8 +80,8 @@ class Scene(private val window: GameWindow) {
     private var Camera : TronCamera;
     private var CameraArm = Transformable();
     private var DirectionalLight : DirectionalLight;
-    private var PointLight : PointLight;
-    private var SpotLight : SpotLight;
+    //private var PointLight : PointLight;
+    //private var SpotLight : SpotLight;
     private var SkyBox : Skybox? = null;
 
 
@@ -334,7 +335,12 @@ class Scene(private val window: GameWindow) {
         wolfPlatformActor?.let { registerActor(it); lockList.add(it) }
 
 
-
+        val glowball = ModelLoader.loadModel("project/assets/models/puzzle1/solved/glowsphere.obj", 0f, 0f, 0f)
+        glowball?.MeshList?.forEach { it.material?.emissionColor = Vector3f(100f, 1f, 1f) }
+        val glowPositions = PositionGenerator.generatePositions(1000, Vector3f(-30f, -20f, -50f), Vector3f(50f, -10f, 10f), 5f, 5f, 5f)
+        val glowballInst = glowball?.let { g -> glowPositions?.let { RenderableInstance(g, it, 1000) } }
+        glowballInst?.instances?.let { glowballs.addAll(it); Instances.add(glowballInst) }
+        glowballRef = glowballInst
         //===================================================================
         // Camera Initialization
         //===================================================================
@@ -354,7 +360,7 @@ class Scene(private val window: GameWindow) {
         //===================================================================
 
         DirectionalLight = DirectionalLight(Vector3f(0.1f), Vector3f(2f), Vector3f(2.0f), Vector3f(1.0f, 1.0f, 0.0f));
-        PointLight = PointLight(Vector3f(), Vector3f(0.7f, 0.0f, 0.901f), Vector3f(0.7f, 0.5f, 1.0f), Player);
+        /*PointLight = PointLight(Vector3f(), Vector3f(0.7f, 0.0f, 0.901f), Vector3f(0.7f, 0.5f, 1.0f), Player);
         PointLight.translateLocal(Vector3f(0.0f, 1.5f, 0.0f));
         SpotLight = SpotLight(
                 Vector3f(0.0f, 0.0f, -1.0f),
@@ -391,7 +397,7 @@ class Scene(private val window: GameWindow) {
                 3 -> p.translateLocal(Vector3f(15f, 3f, -15f));
             }
             //pointLights.add(p);
-        }
+        }*/
 
         //println(spotLights.size)
 
@@ -1216,7 +1222,7 @@ class Scene(private val window: GameWindow) {
 
         }
 
-        //Jump
+        /*//Jump
         if(jumpState)
         {
             var maxHeight = 2.5f;
@@ -1231,13 +1237,23 @@ class Scene(private val window: GameWindow) {
             }
 
             if(currentHeight <= 0.0f) { jumpState = false; speed *= -1.0f;}
-        }
+        }*/
 
         //println("${CameraArm.getPosition()} == ${MotorCycle?.getPosition()}");
         //println(MotorCycle?.getWorldPosition())
         //println(Camera.getCalculateViewMatrix())
 
+        if (puzzleSolved()) playPuzzleSolved(dt)
 
+    }
+
+    private fun playPuzzleSolved(dt: Float) {
+        glowballRef?.updateMatrices { it.translateLocal(Vector3f(1f, 2f, 1f).mul(dt))}
+    }
+
+    private fun puzzleSolved(): Boolean {
+        for (p in lockList) if(!p.getActivated()) return false
+        return true
     }
 
     fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {

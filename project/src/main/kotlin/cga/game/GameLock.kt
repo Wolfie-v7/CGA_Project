@@ -49,4 +49,6 @@ class GameLock(private val _world: Scene,
         }
     }
 
+    fun getActivated() = activated
+
 }

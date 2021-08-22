@@ -86,7 +86,7 @@ class RenderableInstance(private var base : Renderable,
 
     }
 
-    private fun updateMatrices(function: (Transformable) -> Unit){
+    fun updateMatrices(function: (Transformable) -> Unit){
         val list = arrayListOf<Float>();
         for(i in 0 until instanceCount) {
             val t = instances[i]

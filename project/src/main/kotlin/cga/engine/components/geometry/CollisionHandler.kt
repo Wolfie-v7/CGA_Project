@@ -1,6 +1,5 @@
-package cga.game
+package cga.engine.components.geometry
 
-import cga.engine.components.geometry.CollisionMesh
 import org.joml.Math.abs
 import org.joml.Math.min
 import org.joml.Vector3f
