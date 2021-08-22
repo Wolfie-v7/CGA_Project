@@ -342,6 +342,7 @@ class Scene(private val window: GameWindow) {
         Camera.rotateLocal(DegToRad(-20.0f), 0.0f, 0.0f);
         Camera.translateLocal(Vector3f(0.0f, 0.0f, 7.0f));
         Camera.rotateLocal(DegToRad(5.0f), 0.0f, 0.0f);
+        Camera.setRadius(CameraArm.getWorldPosition().sub(Camera.getWorldPosition()).length())
 
 
         //===================================================================

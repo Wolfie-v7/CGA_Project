@@ -7,8 +7,10 @@ import org.joml.Math
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.tan
 
 class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f, var ZNear : Float = 0.1f, var ZFar : Float = 100.0f, var _parent : Transformable? = null)
     : ICamera, Transformable(Matrix4f(), _parent) {
@@ -30,6 +32,8 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
     private var zooming: Boolean = false
     private var mt = 0f
     private val zoomFOV = Fov * 0.7f
+    private var RADIUS = 0f
+    private var halfNear = ZNear * tan(Fov)
 
     override fun getCalculateViewMatrix(): Matrix4f {
 
@@ -69,7 +73,7 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
     }
 
     fun update(dt: Float, t: Float, terrain: Terrain) {
-        updateTerrainCollision(terrain.getHeightAtPosition(getWorldPosition().x(), getWorldPosition().z()))
+        updateTerrainCollision(terrain.getHeightAtPosition(getWorldPosition().x(), getWorldPosition().z()), dt)
         updateZoom(zooming, dt)
     }
 
@@ -122,8 +126,19 @@ class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f,
         }
     }
 
-    private fun updateTerrainCollision(terrainHeight: Float) {
+    private fun updateTerrainCollision(terrainHeight: Float, dt: Float) {
+        if (getWorldPosition().y() - halfNear < terrainHeight) {
+            translateLocal(Vector3f(0f, 0f, -abs(terrainHeight - getWorldPosition().y() + halfNear)))
+        }
 
+        if ((_parent?.getWorldPosition()?.sub(getWorldPosition())?.length() ?: 0f) < RADIUS) {
+            translateLocal(Vector3f(0f, 0f, RADIUS * dt))
+        }
+
+    }
+
+    fun setRadius(length: Float) {
+        RADIUS = length
     }
 
 
