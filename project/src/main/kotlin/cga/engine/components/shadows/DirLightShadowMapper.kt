@@ -1,6 +1,6 @@
 package cga.engine.components.shadows
 
-import cga.engine.components.camera.TronCamera
+import cga.engine.components.camera.ThirdPersonCamera
 import cga.engine.components.light.DirectionalLight
 import org.joml.Matrix4f
 import org.joml.Vector3f
@@ -12,13 +12,13 @@ class DirLightShadowMapper(private var shadowResolution : Int,
                            private var width : Int,
                            private var height : Int,
                            private val lightSource : DirectionalLight,
-                           private val camera: TronCamera) : ShadowMapper(shadowResolution, width, height, lightSource)
+                           private val camera: ThirdPersonCamera) : ShadowMapper(shadowResolution, width, height, lightSource)
 {
     constructor (resoluion: Int,
                  width: Int,
                  height: Int,
                  lightSource: DirectionalLight,
-                 camera: TronCamera,
+                 camera: ThirdPersonCamera,
                  zNear: Float,
                  zFar: Float
     ): this(resoluion, width, height, lightSource, camera)

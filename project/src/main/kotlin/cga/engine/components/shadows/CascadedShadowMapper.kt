@@ -1,6 +1,6 @@
 package cga.engine.components.shadows
 
-import cga.engine.components.camera.TronCamera
+import cga.engine.components.camera.ThirdPersonCamera
 import cga.engine.components.light.DirectionalLight
 import cga.engine.components.shader.ShaderProgram
 import org.joml.Matrix4f
@@ -11,7 +11,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-class CascadedShadowMapper(camera: TronCamera, width: Int, height: Int, val lightSource: DirectionalLight, val NUM_CASCADES: Int = 4) {
+class CascadedShadowMapper(camera: ThirdPersonCamera, width: Int, height: Int, val lightSource: DirectionalLight, val NUM_CASCADES: Int = 4) {
 
     private val z_near = camera.ZNear
     private val z_far = camera.ZFar

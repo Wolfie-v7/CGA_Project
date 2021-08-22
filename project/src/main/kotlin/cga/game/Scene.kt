@@ -1,7 +1,7 @@
 package cga.game
 
 import cga.engine.components.geometry.CollisionHandler
-import cga.engine.components.camera.TronCamera
+import cga.engine.components.camera.ThirdPersonCamera
 import cga.engine.components.framebuffer.DepthDebug
 import cga.engine.components.framebuffer.FrameBuffer
 import cga.engine.components.framebuffer.MultSampFrameBuffer
@@ -77,7 +77,7 @@ class Scene(private val window: GameWindow) {
 
     private var Renderables = mutableListOf<Renderable>();
     private var Instances = mutableListOf<RenderableInstance>()
-    private var Camera : TronCamera;
+    private var Camera : ThirdPersonCamera;
     private var CameraArm = Transformable();
     private var DirectionalLight : DirectionalLight;
     //private var PointLight : PointLight;
@@ -106,7 +106,7 @@ class Scene(private val window: GameWindow) {
         // Shaders Initialization
 
         terrainShader = ShaderProgram("project/assets/shaders/terrain_vert.glsl", "project/assets/shaders/terrain_frag.glsl")
-        mainShader = ShaderProgram("project/assets/shaders/tronAnim_vert.glsl", "project/assets/shaders/tronCascaded_frag.glsl");
+        mainShader = ShaderProgram("project/assets/shaders/mainAnim_vert.glsl", "project/assets/shaders/mainCascaded_frag.glsl");
         skyboxShader = ShaderProgram("project/assets/shaders/skybox_vert.glsl", "project/assets/shaders/skybox_frag.glsl");
         postProcessShader = ShaderProgram("project/assets/shaders/postprocess_vert.glsl", "project/assets/shaders/postprocess_frag.glsl");
         depthMapShader = ShaderProgram("project/assets/shaders/depthMap_vert.glsl", "project/assets/shaders/depthMap_frag.glsl");
@@ -346,7 +346,7 @@ class Scene(private val window: GameWindow) {
         //===================================================================
 
         CameraArm = Transformable(Matrix4f(), Player)
-        Camera = TronCamera(DegToRad(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f, CameraArm);
+        Camera = ThirdPersonCamera(DegToRad(45.0f), 16.0f / 9.0f, 0.1f, 1000.0f, CameraArm);
         Camera.rotateLocal(DegToRad(-20.0f), 0.0f, 0.0f);
         Camera.translateLocal(Vector3f(0.0f, 0.0f, 7.0f));
         Camera.rotateLocal(DegToRad(5.0f), 0.0f, 0.0f);
@@ -1056,6 +1056,7 @@ class Scene(private val window: GameWindow) {
         while (spawnQueue.isNotEmpty()) ActorList.add(spawnQueue.poll())
         while (despawnQueue.isNotEmpty()) ActorList.remove(despawnQueue.poll())
 
+        currentMousePos = window.mousePos; // store current mouse Position every frame
         Camera.update(dt, t, terrain)
         collisionHandler.update(dt, t)
         Renderables.forEach {it.update(dt, t)}
@@ -1064,184 +1065,6 @@ class Scene(private val window: GameWindow) {
             else it.Update(dt, t)
         }
         Instances.forEach { it.update(dt, t) }
-
-        /*if (accelerate) Player?.playAnimation(0, 4f)
-        else if(window.getKeyState(GLFW.GLFW_KEY_X)) Player?.playAnimation(1)
-        else Player?.stopAnimation()*/
-
-
-        /**
-         * Input Mapping
-         *
-         * W - accelerate
-         * S - reverse / brake
-         * A - lean left
-         * D - lean right
-         * Space - jump
-         *
-         * Mouse Right Click - Camera Orbit Mode
-         */
-        //accelerate = window.getKeyState(GLFW.GLFW_KEY_W);
-        /*if(window.getKeyState(GLFW.GLFW_KEY_S))
-        {
-            if(!brake && !reverse)
-            {
-                if(fwdSpeed != 0.0f) brake = true;
-                else reverse = true;
-            }
-        }
-        else
-        {
-            brake = false; reverse = false;
-        }
-        leanLeft = window.getKeyState(GLFW.GLFW_KEY_A);
-        leanRight = window.getKeyState(GLFW.GLFW_KEY_D);
-        if(window.getKeyState(GLFW.GLFW_KEY_SPACE)) jumpState = true;*/
-        currentMousePos = window.mousePos; // store current mouse Position every frame
-
-
-        /**
-         * Handles acceleration
-         * Cannot accelerate and reverse at the same time
-         * can only turn if the forward speed is non-zero
-         *  Maximum speed is 1500 unit/dt
-         */
-        if(accelerate)
-        {
-            if(!reverse)
-            {
-                brake = false;
-                if (fwdSpeed > -300.0 * dt) fwdSpeed += acceleration * dt;
-                Player?.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
-                CameraArm.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
-                if (leanLeft || leanRight) {
-                    Player?.rotateAroundPoint(0.0f, DegToRad(leanAngle * 0.5f), 0.0f, Player!!.getPosition());
-                    CameraArm.rotateAroundPoint(0.0f, DegToRad(leanAngle * 0.5f), 0.0f, CameraArm.getPosition())
-                }
-            }
-        }
-        else
-        {
-            if(fwdSpeed < 0.0f) fwdSpeed -= (acceleration / 2.0f) * dt; if(fwdSpeed > 0.0f) fwdSpeed = 0.0f;
-            Player?.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
-            CameraArm.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
-            if ((leanLeft || leanRight) && fwdSpeed < -40.0f * dt) {
-                Player?.rotateAroundPoint(0.0f, DegToRad(leanAngle * 0.5f), 0.0f, Player!!.getPosition());
-                CameraArm.rotateAroundPoint(0.0f, DegToRad(leanAngle * 0.5f), 0.0f, CameraArm.getPosition())
-            }
-        }
-
-
-        /**
-         * Handles reverse movement
-         * cannot accelerate and reverse at the same time
-         * reversing while the motorcycle is moving forward results in braking
-         */
-        if(reverse)
-        {
-            if(fwdSpeed < 0.0f) { brake = true; reverse = false; }
-            else{
-                brake = false;
-                if(!accelerate)
-                {
-                    if (bwdSpeed < 50.0 * dt) bwdSpeed -= acceleration * dt;
-                    Player?.translateLocal(Vector3f(0.0f, 0.0f, dt * bwdSpeed));
-                    CameraArm.translateLocal(Vector3f(0.0f, 0.0f, dt * bwdSpeed));
-                    if (leanLeft || leanRight) {
-                        Player?.rotateAroundPoint(0.0f, DegToRad(leanAngle * 0.5f), 0.0f, Player!!.getPosition());
-                        CameraArm.rotateAroundPoint(0.0f, DegToRad(leanAngle * 0.5f), 0.0f, CameraArm.getPosition())
-                    }
-                }
-            }
-        }
-
-        /**
-         * Handles braking
-         * braking is only true if reverse is true and forward speed is non-zero
-         */
-        if(brake)
-        {
-            if(!accelerate)
-            {
-                if(fwdSpeed < 0.0f) fwdSpeed -= acceleration * dt; if(fwdSpeed > 0.0f) fwdSpeed = 0.0f;
-                Player?.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
-                CameraArm.translateLocal(Vector3f(0.0f, 0.0f, dt * fwdSpeed));
-            }
-        }
-
-
-        // Set if the motorcycle should be resetting its lean rotation
-        resetting = (leanAngle != 0.0000000f && !leanRight && !leanLeft) // Not leaning but the angle is not reset
-                || (leanRight && leanLeft) // if both lean buttons are pressed
-                || (leanLeft && leanAngle < 0.0f) // if lean left button is pressed but the motorcycle is leaning right
-                || (leanRight && leanAngle > 0.0f); // if lean right button is pressed but the motorcycle is leaning left
-
-        // lean left
-        if(!leanRight)
-        {
-            if(leanLeft && leanAngle in 0.0f..1.0f) {
-                leanRight = false;
-                if (leanAngle < 1.0f) leanAngle += dt * 2.0f; leanAngle = leanAngle.coerceIn(0.0000f, 1.0000f);
-                //println(leanAngle)
-                if(leanAngle > 0.0f && leanAngle < 1.0f) {
-                    //Player?.rotateLocal(0.0f, 0.0f, DegToRad(leanAngle));
-
-                }
-                //if(leanAngle <= 0.0f) MotorCycle?.rotateLocal(0.0f, 0.0f, DegToRad(-leanAngle));
-            }
-        }
-
-        // lean right
-        if(!leanLeft)
-        {
-            if(leanRight && leanAngle in -1.0f..0.0f) {
-                leanLeft = false;
-                if (leanAngle > -1.0f) leanAngle -= dt * 2.000000f; leanAngle = leanAngle.coerceIn(-1.0000f, 0.0000f);
-                //println(leanAngle)
-                if(leanAngle > -1.0f && leanAngle <= 0.0f) {
-                    //Player?.rotateLocal(0.0f, 0.0f, DegToRad(leanAngle));
-                }
-                //if(leanAngle >= 0.0f) MotorCycle?.rotateLocal(0.0f, 0.0f, DegToRad(-leanAngle));
-            }
-        }
-
-        // lean reset
-        if(resetting)
-        {
-
-            if (leanAngle > 0.0f) {
-                //Player?.rotateLocal(0.0f, 0.0f, DegToRad(-leanAngle));
-                leanAngle -= dt * 2.0f; leanAngle = leanAngle.coerceIn(0.0000f, 1.0000f);
-            }
-
-            if (leanAngle < 0.0f) {
-                //Player?.rotateLocal(0.0f, 0.0f, DegToRad(-leanAngle));
-                leanAngle += dt * 2.0f; leanAngle = leanAngle.coerceIn(-1.0000f, 0.0000f);
-            }
-
-
-        }
-
-        /*//Jump
-        if(jumpState)
-        {
-            var maxHeight = 2.5f;
-
-
-            Player?.translateLocal(Vector3f(0.0f, dt * speed, 0.0f));
-            var currentHeight: Float = Player!!.getPosition().y;
-            //println(currentHeight);
-            if(currentHeight >= maxHeight)
-            {
-                speed *= -1.0f
-            }
-
-            if(currentHeight <= 0.0f) { jumpState = false; speed *= -1.0f;}
-        }*/
-
-        //println("${CameraArm.getPosition()} == ${MotorCycle?.getPosition()}");
-        //println(MotorCycle?.getWorldPosition())
-        //println(Camera.getCalculateViewMatrix())
 
         if (puzzleSolved()) playPuzzleSolved(dt)
 

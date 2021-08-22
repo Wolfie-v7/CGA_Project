@@ -1,6 +1,6 @@
 package cga.engine.components.skybox
 
-import cga.engine.components.camera.TronCamera
+import cga.engine.components.camera.ThirdPersonCamera
 import cga.engine.components.geometry.VertexAttribute
 import cga.engine.components.shader.ShaderProgram
 import org.joml.Matrix3f
@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11.GL_FLOAT
 import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL30
 
-class Skybox(var texture: CubeMap, var camera: TronCamera? = null) {
+class Skybox(var texture: CubeMap, var camera: ThirdPersonCamera? = null) {
 
     private var vao = 0
     private var vbo = 0

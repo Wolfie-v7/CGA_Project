@@ -12,7 +12,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.tan
 
-class TronCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f, var ZNear : Float = 0.1f, var ZFar : Float = 100.0f, var _parent : Transformable? = null)
+class ThirdPersonCamera(var Fov : Float = 1.0f, var AspectRatio : Float = 16.0f / 9.0f, var ZNear : Float = 0.1f, var ZFar : Float = 100.0f, var _parent : Transformable? = null)
     : ICamera, Transformable(Matrix4f(), _parent) {
 
     private var CameraPos = Vector4f(0.0f, 0.0f, 0.0f,1.0f);

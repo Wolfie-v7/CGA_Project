@@ -1,6 +1,6 @@
 package cga.engine.components.geometry
 
-import cga.engine.components.camera.TronCamera
+import cga.engine.components.camera.ThirdPersonCamera
 import cga.engine.components.shader.ShaderProgram
 import org.joml.Matrix4f
 import org.joml.Vector3f
@@ -67,7 +67,7 @@ class CollisionMesh(private val vertexdata: FloatArray, indexdata: IntArray, pri
         GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, 0)
     }
 
-    fun render(shader: ShaderProgram, camera: TronCamera) {
+    fun render(shader: ShaderProgram, camera: ThirdPersonCamera) {
         val viewMat = camera.getCalculateViewMatrix()
         val projMat = camera.getCalculateProjectionMatrix()
         shader.setUniform("model_matrix", getWorldModelMatrix(), false);
